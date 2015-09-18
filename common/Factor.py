@@ -1,11 +1,14 @@
 # %% header
 # % this class is to represent a raw factor
 # % Date: 8/31/2015
+import sys
+import os
+from QTimeSeries import QTimeSeries
 
 class Factor:
     def __init__(self):
-        self.scoreCache = [] # store factors scores
-        self.cacheFile = []  # store scoreCache
+        self.scoreCache = None # store factors scores
+        self.cacheFile = ''  # store scoreCache
 
         self.name = None #the name of the factor, all upper case
         self.description=None #briefly describe the factor
@@ -25,58 +28,56 @@ class Factor:
         # % return NaN
         # % call self.calculator directly if calculating on the fly
 
-#     def getScore(self, stockID, date, isAsOf=False):
-#         # % ValueOn or AsOf depending on the parameter, the default is ValueOn
-#         if not self.scoreCache: #load from cache if it is available
-#             # ValueOn or AsOf depending on the parameter, the default is ValueOn
-#             if len(self.ScoreCache):   # load from cache if it is available
-#                 if isAsOf:
-#                     map = ValueAsOf(obj.ScoreCache, date);
-#                 else:
-#                     map = ValueOn(obj.ScoreCache, date);
-#                 if (isempty(map))
-#                     error('date can not be found in the data cache');
-#                 end
-#                 factorScore = map(stockID);
-#             elseif (exist(obj.cacheFile, 'file') == 2)  % if cache is not available, but cache file exists, load cache from the file
-#                 obj.ScoreCache = load(obj.cacheFile);
-#                 if isAsOf
-#                     map = ValueAsOf(obj.ScoreCache, date);
-#                 else
-#                     map = ValueOn(obj.ScoreCache, date);
-#                 end
-#                 factorScore = map(stockID);
-#             else
-#                 factorScore = obj.Calculator(stockID,date); % calculate on the fly
-#             end
-#         end
+    def getScore(self, stockID, date, isAsOf=False):
+        # % ValueOn or AsOf depending on the parameter, the default is ValueOn
+        if not self.scoreCache: #load from cache if it is available
+            # ValueOn or AsOf depending on the parameter, the default is ValueOn
+            if len(self.ScoreCache):   # load from cache if it is available
+                if isAsOf:
+                    map = self.ScoreCache.asof(date)
+                else:
+                    map = self.scoreCache[date]
+                if not map:
+                    print >> sys.std.err,  'date can not be found in the data cache'
+                factorScore = map(stockID)
+            elif os.exits(self.cacheFile):  # if cache is not available, but cache file exists, load cache from the file
+                self.ScoreCache = load(self.cacheFile)
+                if isAsOf:
+                    map = self.ScoreCache.asof(date)
+                else:
+                    map = self.ScoreCache[date]
+                factorScore = map(stockID);
+            else:
+                factorScore = self.Calculator(stockID,date); #% calculate on the fly
+
+        return factorScore
 #
 #         % calculate the factor scores once and save it to the cache file
 #         % dates is a vector of Matlab dates on which the scores are calculated and saved
 #         % univPP is a universe PortfolioProvider
-#         function CalcScoresAndSave(obj, dates, univPP)
-#             datesLen = length(dates);
-#             cache = QTimeSeries();
-#             for i = 1:datesLen
-#                 dt = dates(i);
-#                 %disp(datestr(dt,'yyyymmdd'));
-#                 %portfolio = GetPortfolioOn(univPP, dt);
-#                 portfolio = GetPortfolioAsofFixed(univPP, dt);
-#                 numHoldings = length(portfolio.Holdings);
-#                 ids = cell(1, numHoldings);
-#                 scores = zeros(1, numHoldings);
-#                 for j = 1:numHoldings
-#                     score = obj.Calculator(portfolio.Holdings(j).StockID, dt);  %% dt doesn't need to be a trading date? strange
-#                     %disp([j,size(score)]);
-#                     scores(j) = score;
-#                     ids{j} = portfolio.Holdings(j).StockID;
-#                 end
-#                 scoreMap = containers.Map(ids, scores);
-#                 Add(cache, dt, scoreMap);
-#             end
-#             obj.ScoreCache = cache;
-#             save(obj.cacheFile, 'cache');
-#         end
+    def CalcScoresAndSave(self, dates, univPP):
+        datesLen = len(dates)
+        cache = QTimeSeries()
+        for i in xrange(datesLen):
+            dt = dates[i];
+            #%disp(datestr(dt,'yyyymmdd'));
+            #%portfolio = GetPortfolioOn(univPP, dt);
+            portfolio = GetPortfolioAsofFixed(univPP, dt)
+            numHoldings = len(portfolio.Holdings)
+            ids = cell(1, numHoldings);
+            scores = zeros(1, numHoldings);
+            for j = 1:numHoldings
+                score = obj.Calculator(portfolio.Holdings(j).StockID, dt);  %% dt doesn't need to be a trading date? strange
+                %disp([j,size(score)]);
+                scores(j) = score;
+                ids{j} = portfolio.Holdings(j).StockID;
+            end
+            scoreMap = containers.Map(ids, scores);
+            Add(cache, dt, scoreMap);
+        end
+        obj.ScoreCache = cache;
+        save(obj.cacheFile, 'cache');
+    end
 #
 #         % transform a raw factor to a Z factor
 #         function zFactor = Z(obj, isSectorNeutral, universe)
