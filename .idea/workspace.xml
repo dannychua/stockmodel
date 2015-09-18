@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="68ea6dac-89e0-4fa5-a726-0e4c1e3b3a37" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/common/Holding.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/common/Portfolio.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/common/Stock.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/common/Factor.py" afterPath="$PROJECT_DIR$/common/Factor.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="stockmodel.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,18 +23,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Factor.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/common/Factor.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="32.22222">
-              <caret line="69" column="39" selection-start-line="69" selection-start-column="39" selection-end-line="69" selection-end-column="39" />
-              <folding>
-                <element signature="e#76#86#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="Portfolio.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/common/Portfolio.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -50,14 +35,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Stock.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Stock.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/common/Stock.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-0.10892857">
+            <state vertical-scroll-proportion="2.2592592">
               <caret line="92" column="34" selection-start-line="92" selection-start-column="34" selection-end-line="92" selection-end-column="34" />
               <folding>
                 <element signature="e#167#186#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.846678">
+              <caret line="41" column="9" selection-start-line="41" selection-start-column="9" selection-end-line="41" selection-end-column="9" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -151,6 +146,7 @@
         <option value="$PROJECT_DIR$/common/Holding.py" />
         <option value="$PROJECT_DIR$/common/Portfolio.py" />
         <option value="$PROJECT_DIR$/common/Stock.py" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -158,7 +154,7 @@
     <order />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-41" />
+    <option name="x" value="95" />
     <option name="y" value="23" />
     <option name="width" value="1404" />
     <option name="height" value="684" />
@@ -398,7 +394,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-41" y="23" width="1404" height="684" extended-state="0" />
+    <frame x="95" y="23" width="1404" height="684" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
@@ -523,11 +519,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/common/Stock.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.10892857">
+        <state vertical-scroll-proportion="2.2592592">
           <caret line="92" column="34" selection-start-line="92" selection-start-column="34" selection-end-line="92" selection-end-column="34" />
           <folding>
             <element signature="e#167#186#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.846678">
+          <caret line="41" column="9" selection-start-line="41" selection-start-column="9" selection-end-line="41" selection-end-column="9" />
+          <folding />
         </state>
       </provider>
     </entry>
