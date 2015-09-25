@@ -22,11 +22,11 @@ class Factor:
         self.cacheFile = None # obj.cacheFile = fullfile(GlobalConstant.DATA_DIR, ['FactorScores\', obj.Name, '.mat']);
         self.univPP = univPP
         
-        # % get the score from the cache if it is available
-        # % otherwise calculate it on the fly
-        # % if the cache exists, but the date or the stock doesn't not,
-        # % return NaN
-        # % call self.calculator directly if calculating on the fly
+        # get the score from the cache if it is available
+        # otherwise calculate it on the fly
+        # if the cache exists, but the date or the stock doesn't not,
+        # return NaN
+        # call self.calculator directly if calculating on the fly
 
     def getScore(self, stockID, date, isAsOf=False):
         # % ValueOn or AsOf depending on the parameter, the default is ValueOn
