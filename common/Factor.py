@@ -7,15 +7,6 @@ import cPickle
 from QTimeSeries import QTimeSeries
 
 class Factor:
-    def __init__(self):
-        self.scoreCache = None # store factors scores
-        self.cacheFile = ''  # store scoreCache
-
-        self.name = None #the name of the factor, all upper case
-        self.description=None #briefly describe the factor
-        self.calculator = None # the function handle that calculates factor scores
-        self.univPP = None #universe portfolio provider
-
     def __init__(self, name, desc, delegator, univPP):
         self.name = name
         self.description = desc
@@ -35,7 +26,7 @@ class Factor:
             # ValueOn or AsOf depending on the parameter, the default is ValueOn
             if len(self.ScoreCache):   # load from cache if it is available
                 if isAsOf:
-                    map = self.ScoreCache.AsOf(date)
+                    map = self.ScoreCache.ValueAsOf(date)
                 else:
                     map = self.scoreCache.ValueOn(date)
                 if not map:
@@ -44,9 +35,9 @@ class Factor:
             elif os.exits(self.cacheFile):  # if cache is not available, but cache file exists, load cache from the file
                 self.ScoreCache = cPickle.load(self.cacheFile)
                 if isAsOf:
-                    map = self.ScoreCache.asof(date)
+                    map = self.ScoreCache.ValueAsOf(date)
                 else:
-                    map = self.ScoreCache[date]
+                    map = self.scoreCache.ValueOn(date)
                 factorScore = map[stockID]
             else:
                 factorScore = self.Calculator(stockID,date) #% calculate on the fly
