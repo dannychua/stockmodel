@@ -1,5 +1,8 @@
 import numpy as np
 from Stock import Stock
+from custom import checkDate
+from Stock import Stock
+import sys
 # %% header
 # % handle a portfolio and the related logic
 # % a portfolio is a set of holdings with a date when the portfolio is
@@ -36,16 +39,16 @@ class Portfolio:
     #% re-weight the portfolio to be equal weighted
     def ReWeightEqual(self):
         if len(self.Holdings):   # % if the portfolio has holdings
-            wt = 100.0/len(self.Holdings);
+            wt = 100.0/len(self.Holdings)
             for i in xrange(len(self.Holdings)):
-                self.Holdings[i].Weight = wt;
+                self.Holdings[i].Weight = wt
 
     #% re-weight the long side to be 100%
     def ReWeightTo100(self):
         if len(self.Holdings):    #% if the portfolio has holdings
             wts = np.array([x.Weight for x in self.Holdings])
             total = wts[wts>0].sum()   #% sum the positive weights only
-            scalar = 100.0/total;
+            scalar = 100.0/total
             for i in xrange(len(self.Holdings)):
                 self.Holdings[i].Weight *= scalar
 
@@ -53,78 +56,52 @@ class Portfolio:
     #% market cap is evaluated as of 'date'
     def ReWeightMarketCap(self):
         if len(self.Holdings):   #% if the portfolio has holdings
-            size = len(self.Holdings);
-            mktCaps = np.zeros(size); #% note that Weights is 1 X n
-            total = 0;
+            size = len(self.Holdings)
+            mktCaps = np.zeros(size) #% note that Weights is 1 X n
+            total = 0
             for i in xrange(size):
-                stk = Stock.ByWindID(self.Holdings[i].StockID);
-                mktCaps(i) = FloatMarketCap(stk, self.Date);
-                if isnan(mktCaps(i))
-                    mktCaps(i) = 0;
-                end
-                total = total + mktCaps(i);
-            end
-            for i = 1:len
-                self.Holdings[i].Weight = 100.0*mktCaps(i)/total;
-            end
-        end
-    end
+                stk = Stock.ByWindID(self.Holdings[i].StockID)
+                mktCaps[i] = stk.FloatMarketCap(self.Date)
+                if np.isnan(mktCaps[i]):
+                    mktCaps[i] = 0
+                total +=  mktCaps[i]
+            for i in xrange(size):
+                self.Holdings[i].Weight = 100.0*mktCaps[i]/total
 
-        % hold the portfolio obj through "date"
-        % if reweightTo100 = true, the total long weight is 100%
-        % otherwise (default), don't reweight it
-        function HeldToDate(obj, date, reweightTo100)
-            if(self.Data < daet && ~isempty(self.Holdings))
-                len = length(self.Holdings);
-                for i = 1:len
-                    stk = Stock.ByWindID(self.Holdings[i].StockID);
-                    ret = TotalReturnInRange(stk, self.Date, date);
-                    if isnan(ret)
-                        ret = 0;
-                    end
-                    self.Holdings[i].Weight = self.Holdings[i].Weight*(1+0.01*ret);
-                end
-                if(nargin > 2 && reweightTo100)
-                    ReWeightTo100(obj);
-                end
-            end
-        end
+        # % hold the portfolio obj through "date"
+        # % if reweightTo100 = true, the total long weight is 100%
+        # % otherwise (default), don't reweight it
+    def  HeldToDate(self, date, reweightTo100):
+            if self.Date < date and len(self.Holdings):
+                size = len(self.Holdings)
+                for i in xrange(size):
+                    stk = Stock.ByWindID(self.Holdings[i].StockID)
+                    ret = stk.TotalReturnInRange(self.Date, date)
+                    if np.isnan(ret):
+                        ret = 0
+                    self.Holdings[i].Weight = self.Holdings[i].Weight*(1+0.01*ret)
+                if reweightTo100:
+                    self.ReWeightTo100()
 
-        % calculate total returns of the portfolio from startDate to endDate
-        % pfReturn is in percentage
-        function pfReturn = TotalReturnInRange(obj, startDate, endDate)
-            if ischar(startDate)
-                startDate = datenum(startDate, 'yyyymmdd');
-            end
+        # % calculate total returns of the portfolio from startDate to endDate
+        # % pfReturn is in percentage
+    def TotalReturnInRange(self, startDate, endDate):
+            startDate = checkDate(startDate)
+            endDate = checkDate(endDate)
+            pfReturn = 0
+            validWt = 0
+            numHoldings = len(self.Holdings)
+            for i in xrange(numHoldings):
+                stk = Stock.ByWindID(self.Holdings[i].StockID)
+                stkRet = stk.TotalReturnInRange(startDate, endDate)
+                if stkRet and not np.isnan(stkRet):
+                    validWt = validWt + self.Holdings[i].Weight
+                    pfReturn = pfReturn + stkRet * self.Holdings[i].Weight * 0.01
+            if validWt < 95:
+                print >> sys.stderr, 'less than 95% of the portfolio has valid returns'
 
-            if ischar(endDate)
-                endDate = datenum(endDate, 'yyyymmdd');
-            end
+    def GetStockIDs(self):
+        return str(self.Holdings.StockID)
 
-            pfReturn = 0;
-            validWt = 0;
-            numHoldings = length(self.Holdings);
-            for i = 1:numHoldings
-                stk = Stock.ByWindID(self.Holdings[i].StockID);
-                stkRet = TotalReturnInRange(stk, startDate, endDate);
-                if ~isnan(stkRet)
-                    validWt = validWt + self.Holdings[i].Weight;
-                    pfReturn = pfReturn + stkRet * self.Holdings[i].Weight * 0.01;
-                end
-            end
-            if validWt < 95
-                error('less than 95% of the portfolio has valid returns')
-            end
-        end
-
-        function stockIDs = GetStockIDs(obj)
-            stockIDs = char(self.Holdings.StockID);
-        end
-
-        function holdings = get.Holdings(obj)
-            holdings = self.Holdings;
-        end
-
-    end
-
-end
+    def getHoldings(self):
+        return self.Holdings
