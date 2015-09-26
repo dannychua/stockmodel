@@ -8,6 +8,7 @@
 import pandas as pd
 import GlobalConstant
 from QTimeSeries import QTimeSeries
+from SectorIndustry import SectorIndustry
 import time
 
 
