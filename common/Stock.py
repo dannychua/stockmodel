@@ -154,7 +154,7 @@ class Stock:
         # % endDate as of the most recent date in the price series
         # % stkReturn is in percentage
 
-        def otalReturnInRange_Bk(self, startDate, endDate):
+        def totalReturnInRange_Bk(self, startDate, endDate):
             startDate = checkDate(startDate)
             endDate = checkDate(endDate)
             firstDt = self.AdjClosingPx.FirstDate()
