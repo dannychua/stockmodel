@@ -40,3 +40,4 @@ Thumbs.db
 #pycharm project file
 .idea
 .idea/*.*
+*.ipynb
