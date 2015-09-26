@@ -31,7 +31,7 @@ class PortfolioProvider:
         # % otherwise return empty
     def GetPortfolioOn(self, date):
         date = checkDate(date)
-        portfolio = self.Portfolios.ValueOn(date)
+        return self.Portfolios.ValueOn(date)
 
         # % return the portfolio on dt if it exists
         # % if it doesn't exist, then take the most recent portfolio and don't adjust its weights
@@ -43,6 +43,7 @@ class PortfolioProvider:
         portfolio = self.Portfolios.ValueAsOf(date)
         if reWeightTo100:
             portfolio.ReWeightTo100()
+        return portfolio
         
         # % return the portfolio on dt if it exists
         # % if it doesn't exist, then take the most recent portfolio and carry-over its holdings to date
@@ -55,6 +56,7 @@ class PortfolioProvider:
         portfolio.HeldToDate(date, False)
         if reWeightTo100:
             portfolio.ReWeightTo100()
+        return portfolio
 
         
     def TotalReturnInRange(self, startDate, endDate):
