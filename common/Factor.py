@@ -4,6 +4,7 @@
 import sys
 import os
 import cPickle
+import numpy as np
 from QTimeSeries import QTimeSeries
 
 class Factor:
@@ -53,22 +54,21 @@ class Factor:
             dt = dates[i]
             #%disp(datestr(dt,'yyyymmdd'))
             #%portfolio = GetPortfolioOn(univPP, dt)
-            portfolio = GetPortfolioAsofFixed(univPP, dt)
+            portfolio = univPP.GetPortfolioAsofFixed(dt)
             numHoldings = len(portfolio.Holdings)
-            ids = cell(1, numHoldings)
-            scores = zeros(1, numHoldings)
-            for j = 1:numHoldings
-                score = obj.Calculator(portfolio.Holdings(j).StockID, dt)  %% dt doesn't need to be a trading date? strange
-                %disp([j,size(score)])
-                scores(j) = score
-                ids{j} = portfolio.Holdings(j).StockID
-            end
-            scoreMap = containers.Map(ids, scores)
-            Add(cache, dt, scoreMap)
-        end
-        obj.ScoreCache = cache
-        save(obj.cacheFile, 'cache')
-    end
+            ids = np.arange(numHoldings)
+            scores = np.zeros(numHoldings)
+            for j in xrange(numHoldings):
+                score = self.Calculator(portfolio.Holdings[j].StockID, dt)  #%% dt doesn't need to be a trading date? strange
+                #%disp([j,size(score)])
+                scores[j] = score
+                ids [j] = portfolio.Holdings[j].StockID
+            scoreMap = dict(zip(ids, scores))
+            cache.Add(dt, scoreMap)
+        self.ScoreCache = cache
+        with open(self.cacheFile, 'w') as fout:
+            cPickle.dump(cache, fout)
+
 #
 #         % transform a raw factor to a Z factor
 #         function zFactor = Z(obj, isSectorNeutral, universe)
