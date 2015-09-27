@@ -5,6 +5,7 @@ import bisect
 import time
 import pandas as pd
 import matplotlib as plt
+from custom import checkDate
 
 class QTimeSeries:
     def __init__(self):
@@ -30,8 +31,7 @@ class QTimeSeries:
 # % format of 'yyyymmdd'
 
     def Add(self, date, value):
-        if type(date) is str:
-            date = time.strptime(date, '%Y%m%d')
+        date = checkDate(date)
         if date not in self.qseries:
             self.qseries[date] = value
             self.qseries = self.qseries.reindex(sorted(self.qseries.index))
@@ -45,8 +45,7 @@ class QTimeSeries:
 #         % date is either double in the format of datenum, or char in the
 #         % format of 'yyyymmdd'
     def ValueOn(self, date):
-        if type(date) is str:
-            date = time.strptime(date, '%Y%m%d');
+        date = checkDate(date)
         if date in self.qseries:
             return self.qseries[date]
         return None
@@ -57,8 +56,7 @@ class QTimeSeries:
 #         % date is either double in the format of datenum, or char in the
 #         % format of 'yyyymmdd'
     def ValueAsOf(self, date):
-        if type(date) is str:
-            date = time.strptime(date, '%Y%m%d');
+        date = checkDate(date)
         return self.qseries.asof(date)
 #
 #         % return the value immediately after date
@@ -72,8 +70,7 @@ class QTimeSeries:
         return None
 
     def Contains(self, date):
-        if type(date) is str:
-            date = time.strptime(date, '%Y%m%d');
+        date = checkDate(date)
         if date in self.qseries:
             return True
         return False
@@ -98,8 +95,7 @@ class QTimeSeries:
 #         % format of 'yyyymmdd'
 
     def Remove(self, date):
-        if type(date) is str:
-            date = time.strptime(date, '%Y%m%d');
+        date = checkDate(date)
         self.qseries = self.qseries[self.qseries.index != date]
 
     def length(self):
