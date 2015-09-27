@@ -1,6 +1,5 @@
 import numpy as np
-from Stock import Stock
-from custom import checkDate
+from Utils import checkDate
 from Stock import Stock
 import sys
 # %% header

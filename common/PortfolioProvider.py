@@ -6,7 +6,7 @@ __author__ = 'xiaodan'
 # # %%
 # % it is a handle class
 import numpy as np
-from custom import checkDate
+from Utils import checkDate
 
 class PortfolioProvider:
     # properties

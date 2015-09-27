@@ -5,7 +5,7 @@ import bisect
 import time
 import pandas as pd
 import matplotlib as plt
-from custom import checkDate
+from Utils import checkDate
 
 class QTimeSeries:
     def __init__(self):

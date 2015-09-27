@@ -9,7 +9,7 @@ import pandas as pd
 import GlobalConstant
 from QTimeSeries import QTimeSeries
 from SectorIndustry import SectorIndustry
-from custom import checkDate
+from Utils import checkDate
 
 class Stock:
     def __init__(self, windID, ticker, shortName, name, exchange, listBoard, listDate):
