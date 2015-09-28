@@ -40,5 +40,9 @@ Thumbs.db
 #pycharm project file
 .idea
 .idea/*.*
+
+#ipython notebook file
 *.ipynb
+
+#compiled python file
 *.pyc
