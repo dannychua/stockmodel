@@ -4,20 +4,18 @@
 import time
 import GlobalConstant
 from QTimeSeries import QTimeSeries
-# %%
-#
-# % QDate has the format of yyyymmdd
 
 class SectorIndustry:
     def __init__(self):
+        WINDIndustryCache = GlobalConstant.DATA_DIR + 'WINDIndustry.dat'
+        #%save(WINDIndustryCache, 'WINDIndustry');
+        #load(WINDIndustryCache)
+
         #% WIND sector/industry data
         return SectorIndustry.loadWINDIndustry()
 
     @staticmethod
     def loadWINDIndustry():
-        WINDIndustryCache = 'd:\ChinaA\data\WINDIndustry'
-        #%save(WINDIndustryCache, 'WINDIndustry');
-        #load(WINDIndustryCache)
         sqlString = 'select S_INFO_WINDCODE, WIND_IND_CODE, ENTRY_DT, REMOVE_DT, CUR_SIGN from WindDB.dbo.ASHAREINDUSTRIESCLASS'
         curs = GlobalConstant.DBCONN_WIND.cursor()
         curs.execute(sqlString)
