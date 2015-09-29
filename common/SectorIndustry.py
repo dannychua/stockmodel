@@ -46,4 +46,5 @@ class SectorIndustry:
 
 
 if __name__ == '__main__':
-    print SectorIndustry().WINDIndustry
+   # print SectorIndustry().WINDIndustry
+    pass
