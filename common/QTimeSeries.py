@@ -21,11 +21,12 @@ class QTimeSeries:
     # date is either double in the format of datenum, or char in the
     # format of 'yyyymmdd'
 
-    def QTimeSeries(self, dates, values):
+    def __init__(self, dates, values):
         if len(dates) != len(values):
             print 'dates has different length as values'
             return
-        self.qseries = pd.Series(data=values, index=pd.to_datetime(dates).sort_index())
+        self.qseries = pd.Series(data=values, index=dates)
+        self.qseries.sort_index()
 
 # % date is either double in the format of datenum, or char in the
 # % format of 'yyyymmdd'

@@ -9,6 +9,7 @@ import collections
 from QTimeSeries import QTimeSeries
 
 class SectorIndustry:
+    WINDIndustry = None
     def __init__(self):
         self.WINDIndustry = None
         WINDIndustryCache = GlobalConstant.DATA_DIR + 'WINDIndustry.dat'
@@ -29,8 +30,9 @@ class SectorIndustry:
         windIndustry_tmp = collections.defaultdict(list)
         for row in curs.fetchall():
             windID, code, entryDt, removeDt, cur_sign = row
-            entryDt = time.strptime(entryDt, '%Y%m%d')
-            windIndustry_tmp[windID].append([entryDt, code])
+            if type(entryDt) is str:
+                entryDt = time.strptime(entryDt, '%Y%m%d')
+                windIndustry_tmp[windID].append([entryDt, code])
         windIndustry = {}
         for windID, vals in windIndustry_tmp.iteritems():
             dates = []
@@ -38,9 +40,10 @@ class SectorIndustry:
             for val in vals:
                 entryDt, code = val
                 dates.append(entryDt)
-                codes.append(codes)
-            windIndustry[windID] = QTimeSeries(dates=dates, codes=codes)
+                codes.append(code)
+            windIndustry[windID] = QTimeSeries(dates=dates, values=codes)
         return windIndustry
 
 
-
+if __name__ == '__main__':
+    print SectorIndustry().WINDIndustry
