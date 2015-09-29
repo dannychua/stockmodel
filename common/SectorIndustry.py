@@ -3,16 +3,22 @@
 # % date: 8/15/2015
 import time
 import GlobalConstant
+import os
+import cPickle
 from QTimeSeries import QTimeSeries
 
 class SectorIndustry:
     def __init__(self):
+        self.WINDIndustry = None
         WINDIndustryCache = GlobalConstant.DATA_DIR + 'WINDIndustry.dat'
-        #%save(WINDIndustryCache, 'WINDIndustry');
-        #load(WINDIndustryCache)
+        if os.path.exists(WINDIndustryCache):
+            with open(WINDIndustryCache) as fin:
+                self.WINDIndustry = cPickle.load(fin)
+        else:
+            self.WINDIndustry = SectorIndustry.loadWINDIndustry()
+            with open(WINDIndustryCache, 'w') as fout:
+                cPickle.dump(self.WINDIndustry, fout)
 
-        #% WIND sector/industry data
-        return SectorIndustry.loadWINDIndustry()
 
     @staticmethod
     def loadWINDIndustry():
@@ -30,3 +36,5 @@ class SectorIndustry:
                 ts = QTimeSeries(entryDt, code);
                 windIndustry[windID] = ts
         return windIndustry
+
+
