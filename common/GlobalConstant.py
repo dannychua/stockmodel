@@ -10,3 +10,6 @@ from local_env import BASE_DIR, CODE_DIR, DATA_DIR
 #test start and end date
 TestStartDate = datetime(2008, 12, 31)
 TestEndDate = datetime(2014, 12, 31)
+
+#holding structure		
+Holding = ['StockID', 'Weight', 'Shares', 'MarketValue']
