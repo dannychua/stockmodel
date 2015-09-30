@@ -1,5 +1,4 @@
 __author__ = 'xiaodan'
-import pyodbc
 from datetime import datetime
 import QDate
 from local_env import DBCONN_WIND
