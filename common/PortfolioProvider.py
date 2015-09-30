@@ -6,7 +6,7 @@ __author__ = 'xiaodan'
 # # %%
 # % it is a handle class
 import numpy as np
-from Utils import checkDate
+from Utils import Str2Date
 
 class PortfolioProvider:
     # properties
@@ -30,7 +30,7 @@ class PortfolioProvider:
         # % return the portfolio on date if it exists
         # % otherwise return empty
     def GetPortfolioOn(self, date):
-        date = checkDate(date)
+        date = Str2Date(date)
         return self.Portfolios.ValueOn(date)
 
         # % return the portfolio on dt if it exists
@@ -39,7 +39,7 @@ class PortfolioProvider:
         # % if no portfolio exists before dt, return empty
 
     def GetPortfolioAsofFixed(self, date, reWeightTo100=0):
-        date = checkDate(date)
+        date = Str2Date(date)
         portfolio = self.Portfolios.ValueAsOf(date)
         if reWeightTo100:
             portfolio.ReWeightTo100()
@@ -51,7 +51,7 @@ class PortfolioProvider:
         # % if reWeightTo100 is true, re-scale the long side of the portfolio to be 100%
         # % if no portfolio exists before dt, return empty
     def GetPortfolioAsof(self, date, reWeightTo100=0):
-        date = checkDate(date)
+        date = Str2Date(date)
         portfolio = self.Portfolios.ValueAsOf(date)
         portfolio.HeldToDate(date, False)
         if reWeightTo100:

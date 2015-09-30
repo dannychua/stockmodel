@@ -9,7 +9,7 @@ import pandas as pd
 import GlobalConstant
 from QTimeSeries import QTimeSeries
 from SectorIndustry import SectorIndustry
-from Utils import checkDate
+from Utils import Str2Date
 
 class Stock:
     def __init__(self, windID, ticker, shortName, name, exchange, listBoard, listDate):
@@ -110,8 +110,8 @@ class Stock:
     # % stkReturn is in percentage
 
     def TotalReturnInRange(self, startDate, endDate):
-        startDate = checkDate(startDate)
-        endDate = checkDate(endDate)
+        startDate = Str2Date(startDate)
+        endDate = Str2Date(endDate)
         firstDt = self.AdjClosingPx.FirstDate()
         if (startDate < firstDt):
             return None
@@ -126,8 +126,8 @@ class Stock:
     # % stkReturn is in percentage
 
     def TotalReturnInRange_VWAP(self, startDate, endDate):
-        startDate = checkDate(startDate)
-        endDate = checkDate(endDate)
+        startDate = Str2Date(startDate)
+        endDate = Str2Date(endDate)
 
         firstDt = self.AdjVWAP.FirstDate()
         if startDate < firstDt:
@@ -155,8 +155,8 @@ class Stock:
         # % stkReturn is in percentage
 
         def totalReturnInRange_Bk(self, startDate, endDate):
-            startDate = checkDate(startDate)
-            endDate = checkDate(endDate)
+            startDate = Str2Date(startDate)
+            endDate = Str2Date(endDate)
             firstDt = self.AdjClosingPx.FirstDate()
             if startDate < firstDt:
                 return None
@@ -174,7 +174,7 @@ class Stock:
         # % level 1 is sector
         # % level 4 is the full industry code
         def WindIndustryCode(self, date, level=None):
-            date = checkDate(date)
+            date = Str2Date(date)
             windID = self.WindID
             if windID in SectorIndustry.WINDIndustry:
                 ts = SectorIndustry.WINDIndustry[windID]
@@ -187,7 +187,7 @@ class Stock:
         # % return its WIND sector code as of date
         # % the sector code is the four digits of the full industry code
         def WindSectorCode(self, date):
-            date = checkDate(date)
+            date = Str2Date(date)
             windIndustryCode = self.WindIndustryCode(date)
             windSectorCode = windIndustryCode[1:4]
             return windSectorCode

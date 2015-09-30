@@ -9,6 +9,7 @@ import collections
 from QTimeSeries import QTimeSeries
 
 class SectorIndustry:
+    WINDIndustry = None
     def __init__(self):
         self.WINDIndustry = None
         WINDIndustryCache = GlobalConstant.DATA_DIR + 'WINDIndustry.dat'
@@ -26,28 +27,12 @@ class SectorIndustry:
         sqlString = 'select S_INFO_WINDCODE, WIND_IND_CODE, ENTRY_DT, REMOVE_DT, CUR_SIGN from WindDB.dbo.ASHAREINDUSTRIESCLASS'
         curs = GlobalConstant.DBCONN_WIND.cursor()
         curs.execute(sqlString)
-        windIndustry = {}
-        for row in curs.fetchall():
-            windID, code, entryDt, removeDt, cur_sign = row
-            entryDt = time.strptime(entryDt, '%Y%m%d')
-            if windID in windIndustry:
-                ts = windIndustry[windID]
-                ts.add(entryDt, code)
-            else:
-                ts = QTimeSeries(entryDt, code);
-                windIndustry[windID] = ts
-        return windIndustry
-
-    @staticmethod
-    def loadWINDIndustry2():
-        sqlString = 'select S_INFO_WINDCODE, WIND_IND_CODE, ENTRY_DT, REMOVE_DT, CUR_SIGN from WindDB.dbo.ASHAREINDUSTRIESCLASS'
-        curs = GlobalConstant.DBCONN_WIND.cursor()
-        curs.execute(sqlString)
         windIndustry_tmp = collections.defaultdict(list)
         for row in curs.fetchall():
             windID, code, entryDt, removeDt, cur_sign = row
-            entryDt = time.strptime(entryDt, '%Y%m%d')
-            windIndustry_tmp[windID].append(entryDt, code)
+            if type(entryDt) is str:
+                entryDt = time.strptime(entryDt, '%Y%m%d')
+                windIndustry_tmp[windID].append([entryDt, code])
         windIndustry = {}
         for windID, vals in windIndustry_tmp.iteritems():
             dates = []
@@ -55,9 +40,11 @@ class SectorIndustry:
             for val in vals:
                 entryDt, code = val
                 dates.append(entryDt)
-                codes.append(codes)
-            windIndustry[windID] = QTimeSeries(dates=dates, codes=codes)
+                codes.append(code)
+            windIndustry[windID] = QTimeSeries(dates=dates, values=codes)
         return windIndustry
 
 
-
+if __name__ == '__main__':
+   # print SectorIndustry().WINDIndustry
+    pass
