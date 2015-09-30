@@ -52,3 +52,4 @@ common/local_env.py
 
 # Ignore sublime text settings
 *.sublime-project
+*.sublime-workspace
