@@ -22,7 +22,7 @@ class PortfolioProvider:
     def __init__(self, name, portfolios, desc=None, closingPx=None):
         self.Name = name
         self.Portfolios = portfolios
-        self.AvailableDates = portfolios.Dates
+        self.AvailableDates = portfolios.getDates()
         self.Desc = desc
         self.ClosingPx = closingPx
 
