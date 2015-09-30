@@ -10,20 +10,20 @@ class ReturnSeries(QTimeSeries):
     """Handles a time series of portfolios and the related logic.
 
         Attributes:
-            annMean: 			annualized mean
-            annStd: 			annualized stdev
-            sr:					Sharpe ratio = annualized mean/stdev
-            returns:			periodic returns
-            compCumReturns:		compound cumulative returns, starting from 1.0
-            cumReturns:			non-compound cumulative returns, starting from 0
+            annMean:            annualized mean
+            annStd:             annualized stdev
+            sr:                 Sharpe ratio = annualized mean/stdev
+            returns:            periodic returns
+            compCumReturns:     compound cumulative returns, starting from 1.0
+            cumReturns:         non-compound cumulative returns, starting from 0
 
-            __annScalar:		a scalar used to annualize periodic returns
+            __annScalar:        a scalar used to annualize periodic returns
 
             [To be implemented]
-            tStat:				SR*sqrt(numer of years)
-            hitRate:			numer of periods with positive returns / number of periods
-            maxDrawdown:		maximum drawdown
-            sortinoRatio:		annualized mean / std(negative returns)
+            tStat:              SR*sqrt(numer of years)
+            hitRate:            numer of periods with positive returns / number of periods
+            maxDrawdown     maximum drawdown
+            sortinoRatio:       annualized mean / std(negative returns)
     """
 
 
@@ -127,6 +127,7 @@ class ReturnSeries(QTimeSeries):
         if not hasattr(self, '__cumReturns'):
             self.__calc()
         return self.__cumReturns
+
 
 
 
