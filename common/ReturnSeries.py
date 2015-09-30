@@ -15,7 +15,7 @@ class ReturnSeries(QTimeSeries):
             sr:					Sharpe ratio = annualized mean/stdev
             returns:			periodic returns
             compCumReturns:		compound cumulative returns, starting from 1.0
-            cumReturns:			non-compound cumulative returns, starting from 1.0
+            cumReturns:			non-compound cumulative returns, starting from 0
 
             __annScalar:		a scalar used to annualize periodic returns
 
