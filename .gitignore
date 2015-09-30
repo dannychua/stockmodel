@@ -49,3 +49,6 @@ Thumbs.db
 
 #ignore local_env.py
 common/local_env.py
+
+# Ignore sublime text settings
+*.sublime-project
