@@ -123,7 +123,7 @@ class ReturnSeries(QTimeSeries):
 
     @property
     def cumReturns(self):
-        """ Non-compound cumulative return, starting from 1.0 """
+        """ Non-compound cumulative return, starting from 0 """
         if not hasattr(self, '__cumReturns'):
             self.__calc()
         return self.__cumReturns
