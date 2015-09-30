@@ -46,3 +46,6 @@ Thumbs.db
 
 #compiled python file
 *.pyc
+
+#ignore local_env.py
+common/local_env.py
