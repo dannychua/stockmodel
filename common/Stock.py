@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # %% header
 # % this class is to represent a stock
 # % Date: 7/3/2015 created
