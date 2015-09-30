@@ -23,6 +23,8 @@ class PortfolioProviders():
 
     @staticmethod
     def getA50():
+        """ Create PortfolioProvider for A50 """
+
         sqlQuery = """
             select S_CON_WINDCODE StockID, TRADE_DT Date, I_WEIGHT Weight
             from WINDDB.DBO.AINDEXHS300FREEWEIGHT
@@ -35,11 +37,13 @@ class PortfolioProviders():
         df = df.groupby('Date').apply(lambda x: x[['StockID','Weight']].to_dict(orient='records'))
         # print df.head()
 
-        # Create portfolio from time-aggregated Series and add each portfolio to portfolio_ts
+        # Create portfolio_is
+        # - create portfolio from time-aggregated Series and add each portfolio to portfolio_ts
         portfolio_ts = QTimeSeries()
         for date, holding in df.iteritems():
             portfolio_ts.Add(date, Portfolio(date, holding))
 
+        # Create PortfolioProvider from portfolio_ts
         closingPx = PortfolioProviders.getClosingPx('000016.SH')
         a50PP = PortfolioProvider('A50Index', portfolio_ts, 'A50 index', closingPx)
         return a50PP
