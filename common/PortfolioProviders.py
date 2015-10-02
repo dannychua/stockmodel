@@ -110,11 +110,6 @@ class PortfolioProviders():
         pass
 
 
-    @staticmethod
-    def fetchInBatches(conn, rs, batchCount, maxrows):
-        pass
-
-
 
 
 
