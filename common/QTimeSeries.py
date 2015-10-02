@@ -5,33 +5,22 @@ import bisect
 import time
 import pandas as pd
 import matplotlib as plt
-from Utils import checkDate
+from Utils import Str2Date
 
 class QTimeSeries:
-    def __init__(self):
-        self.valueIndex = []  # vector of index of Values, mapping sorted Dates to Values
-        self.dates = []  # dates on which values exist, always sorted up
-        self.values = []  # cell, could be any objects, not sorted, referenced by valueIndex
-        self.qseries = pd.Series(data=self.values, index=self.dates)
-    # if the type of value is unknown, how to pre-allocating space for dates and values??
-    # multiple scenarios:
-    # 1. pass in an array of dates and values
-    # 2. generate an empty timeseries with or without pre-specified
-    # size of the dates
-    # date is either double in the format of datenum, or char in the
-    # format of 'yyyymmdd'
 
-    def QTimeSeries(self, dates, values):
+    def __init__(self, dates=[], values=[]):
         if len(dates) != len(values):
             print 'dates has different length as values'
             return
-        self.qseries = pd.Series(data=values, index=pd.to_datetime(dates).sort_index())
+        self.qseries = pd.Series(data=values, index=dates)
+        self.qseries.sort_index()
 
 # % date is either double in the format of datenum, or char in the
 # % format of 'yyyymmdd'
 
     def Add(self, date, value):
-        date = checkDate(date)
+        date = Str2Date(date)
         if date not in self.qseries:
             self.qseries[date] = value
             self.qseries = self.qseries.reindex(sorted(self.qseries.index))
@@ -45,7 +34,7 @@ class QTimeSeries:
 #         % date is either double in the format of datenum, or char in the
 #         % format of 'yyyymmdd'
     def ValueOn(self, date):
-        date = checkDate(date)
+        date = Str2Date(date)
         if date in self.qseries:
             return self.qseries[date]
         return None
@@ -56,7 +45,7 @@ class QTimeSeries:
 #         % date is either double in the format of datenum, or char in the
 #         % format of 'yyyymmdd'
     def ValueAsOf(self, date):
-        date = checkDate(date)
+        date = Str2Date(date)
         return self.qseries.asof(date)
 #
 #         % return the value immediately after date
@@ -70,7 +59,7 @@ class QTimeSeries:
         return None
 
     def Contains(self, date):
-        date = checkDate(date)
+        date = Str2Date(date)
         if date in self.qseries:
             return True
         return False
@@ -95,7 +84,7 @@ class QTimeSeries:
 #         % format of 'yyyymmdd'
 
     def Remove(self, date):
-        date = checkDate(date)
+        date = Str2Date(date)
         self.qseries = self.qseries[self.qseries.index != date]
 
     def length(self):

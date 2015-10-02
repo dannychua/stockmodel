@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # %% header
 # % this class is to represent a stock
 # % Date: 7/3/2015 created
@@ -9,7 +10,7 @@ import pandas as pd
 import GlobalConstant
 from QTimeSeries import QTimeSeries
 from SectorIndustry import SectorIndustry
-from Utils import checkDate
+from Utils import Str2Date
 
 class Stock:
     def __init__(self, windID, ticker, shortName, name, exchange, listBoard, listDate):
@@ -110,8 +111,8 @@ class Stock:
     # % stkReturn is in percentage
 
     def TotalReturnInRange(self, startDate, endDate):
-        startDate = checkDate(startDate)
-        endDate = checkDate(endDate)
+        startDate = Str2Date(startDate)
+        endDate = Str2Date(endDate)
         firstDt = self.AdjClosingPx.FirstDate()
         if (startDate < firstDt):
             return None
@@ -126,8 +127,8 @@ class Stock:
     # % stkReturn is in percentage
 
     def TotalReturnInRange_VWAP(self, startDate, endDate):
-        startDate = checkDate(startDate)
-        endDate = checkDate(endDate)
+        startDate = Str2Date(startDate)
+        endDate = Str2Date(endDate)
 
         firstDt = self.AdjVWAP.FirstDate()
         if startDate < firstDt:
@@ -154,57 +155,57 @@ class Stock:
         # % endDate as of the most recent date in the price series
         # % stkReturn is in percentage
 
-        def totalReturnInRange_Bk(self, startDate, endDate):
-            startDate = checkDate(startDate)
-            endDate = checkDate(endDate)
-            firstDt = self.AdjClosingPx.FirstDate()
-            if startDate < firstDt:
-                return None
+    def totalReturnInRange_Bk(self, startDate, endDate):
+        startDate = Str2Date(startDate)
+        endDate = Str2Date(endDate)
+        firstDt = self.AdjClosingPx.FirstDate()
+        if startDate < firstDt:
+            return None
 
-            # %better return the return and the date range, so that the
-            # %caller knows how far off the return date range is from the
-            # %required data range
-            # % to be implemented: ValueAfter return the date as well
-            startValue = self.AdjVWAP.ValueAfter(startDate)
-            endValue = self.AdjVWAP.ValueAfter(endDate)
-            return 100.0 * (endValue / startValue - 1.0)
+        # %better return the return and the date range, so that the
+        # %caller knows how far off the return date range is from the
+        # %required data range
+        # % to be implemented: ValueAfter return the date as well
+        startValue = self.AdjVWAP.ValueAfter(startDate)
+        endValue = self.AdjVWAP.ValueAfter(endDate)
+        return 100.0 * (endValue / startValue - 1.0)
 
         # % return its WIND industry code as of date
         # % level could be 1,2,3,4, representing the four levels
         # % level 1 is sector
         # % level 4 is the full industry code
-        def WindIndustryCode(self, date, level=None):
-            date = checkDate(date)
-            windID = self.WindID
-            if windID in SectorIndustry.WINDIndustry:
-                ts = SectorIndustry.WINDIndustry[windID]
-                windIndustryCode = ts.ValueAsOf(date)
-                if level and level <= 3:
-                    windIndustryCode = windIndustryCode[1:(2 + 2 * level)]
-            else:
-                windIndustryCode = []
+    def WindIndustryCode(self, date, level=None):
+        date = Str2Date(date)
+        windID = self.WindID
+        if windID in SectorIndustry.WINDIndustry:
+            ts = SectorIndustry.WINDIndustry[windID]
+            windIndustryCode = ts.ValueAsOf(date)
+            if level and level <= 3:
+                windIndustryCode = windIndustryCode[1:(2 + 2 * level)]
+        else:
+            windIndustryCode = []
 
         # % return its WIND sector code as of date
         # % the sector code is the four digits of the full industry code
-        def WindSectorCode(self, date):
-            date = checkDate(date)
-            windIndustryCode = self.WindIndustryCode(date)
-            windSectorCode = windIndustryCode[1:4]
-            return windSectorCode
+    def WindSectorCode(self, date):
+        date = Str2Date(date)
+        windIndustryCode = self.WindIndustryCode(date)
+        windSectorCode = windIndustryCode[1:4]
+        return windSectorCode
 
-        # % this is the only way to initiate a stock, which is a time
-        # % consuming operation, so we just do once for each stock
-        @staticmethod
-        def ByWindID(windID):
-            global STOCKMASTERMAP
-            if windID in STOCKMASTERMAP:
-                stock = STOCKMASTERMAP[windID]
-            else:
-                # % initiate stock properties from database
-                sqlStr1 = 'select S_INFO_CODE ''Ticker'', S_INFO_NAME ''ShortName'', S_INFO_COMPNAME ''Name'''', S_INFO_EXCHMARKET ''Exchange'', S_INFO_LISTBOARD ''ListBoard'', S_INFO_LISTDATE ''ListDate''''from WINDDB.DBO.ASHAREDESCRIPTION''where S_INFO_WINDCODE=%s'
-                curs = GlobalConstant.DBCONN_WIND.cursor()
-                curs.execute(sqlStr1 % windID)
-                row = curs.fetchone()
-                stock = Stock(windID, row[1], row[2], row[3], row[4], row[5], row[6])
-                curs.close()
-                STOCKMASTERMAP[windID] = stock
+    # % this is the only way to initiate a stock, which is a time
+    # % consuming operation, so we just do once for each stock
+    @staticmethod
+    def ByWindID(windID):
+        global STOCKMASTERMAP
+        if windID in STOCKMASTERMAP:
+            stock = STOCKMASTERMAP[windID]
+        else:
+            # % initiate stock properties from database
+            sqlStr1 = 'select S_INFO_CODE ''Ticker'', S_INFO_NAME ''ShortName'', S_INFO_COMPNAME ''Name'''', S_INFO_EXCHMARKET ''Exchange'', S_INFO_LISTBOARD ''ListBoard'', S_INFO_LISTDATE ''ListDate''''from WINDDB.DBO.ASHAREDESCRIPTION''where S_INFO_WINDCODE=%s'
+            curs = GlobalConstant.DBCONN_WIND.cursor()
+            curs.execute(sqlStr1 % windID)
+            row = curs.fetchone()
+            stock = Stock(windID, row[1], row[2], row[3], row[4], row[5], row[6])
+            curs.close()
+            STOCKMASTERMAP[windID] = stock

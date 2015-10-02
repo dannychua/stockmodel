@@ -1,5 +1,5 @@
 import numpy as np
-from Utils import checkDate
+from Utils import Str2Date
 from Stock import Stock
 import sys
 # %% header
@@ -85,8 +85,8 @@ class Portfolio:
         # % calculate total returns of the portfolio from startDate to endDate
         # % pfReturn is in percentage
     def TotalReturnInRange(self, startDate, endDate):
-            startDate = checkDate(startDate)
-            endDate = checkDate(endDate)
+            startDate = Str2Date(startDate)
+            endDate = Str2Date(endDate)
             pfReturn = 0
             validWt = 0
             numHoldings = len(self.Holdings)
