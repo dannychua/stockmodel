@@ -25,17 +25,48 @@ class PortfolioProviders():
     def getA50():
         """ Create PortfolioProvider for A50 """
 
+        s_info_windcode = '000016.SH'
+
         sqlQuery = """
             select S_CON_WINDCODE StockID, TRADE_DT Date, I_WEIGHT Weight
             from WINDDB.DBO.AINDEXHS300FREEWEIGHT
-            where S_INFO_WINDCODE = '000016.SH' and TRADE_DT > '%s'
+            where S_INFO_WINDCODE = '%s' and TRADE_DT > '%s'
             order by TRADE_DT
-            """.format(GlobalConstant.TestStartDate)
+            """ % (s_info_windcode, GlobalConstant.TestStartDate)
+
+        # Group SQL result by 'Date', aggregating into list of {StockID,Weight} dicts
+        df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
+        df = df.groupby('Date').apply(lambda x: x[['StockID','Weight']].to_dict(orient='records'))
+        print df.head()
+        # Create portfolio_is
+        # - create portfolio from time-aggregated Series and add each portfolio to portfolio_ts
+        portfolio_ts = QTimeSeries()
+        for date, holding in df.iteritems():
+            portfolio_ts.Add(date, Portfolio(date, holding))
+
+        # Create PortfolioProvider from portfolio_ts
+        closingPx = PortfolioProviders.getClosingPx(s_info_windcode)
+        portfolioprovider = PortfolioProvider('A50Index', portfolio_ts, 'A50 index', closingPx)
+        return portfolioprovider
+
+
+    @staticmethod
+    def getZhongZheng500():
+        """ Create PortfolioProvider for ZhongZheng500 """
+
+        s_info_windcode = '000905.SH'
+
+        sqlQuery = """
+            select S_CON_WINDCODE StockID, TRADE_DT Date, I_WEIGHT Weight
+            from WINDDB.DBO.AINDEXHS300FREEWEIGHT
+            where S_INFO_WINDCODE = '%s' and TRADE_DT > '%s'
+            order by TRADE_DT
+            """ % (s_info_windcode, GlobalConstant.TestStartDate)
         
         # Group SQL result by 'Date', aggregating into list of {StockID,Weight} dicts
         df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
         df = df.groupby('Date').apply(lambda x: x[['StockID','Weight']].to_dict(orient='records'))
-        # print df.head()
+        print df.head()
 
         # Create portfolio_is
         # - create portfolio from time-aggregated Series and add each portfolio to portfolio_ts
@@ -44,19 +75,39 @@ class PortfolioProviders():
             portfolio_ts.Add(date, Portfolio(date, holding))
 
         # Create PortfolioProvider from portfolio_ts
-        closingPx = PortfolioProviders.getClosingPx('000016.SH')
-        a50PP = PortfolioProvider('A50Index', portfolio_ts, 'A50 index', closingPx)
-        return a50PP
-
-
-    @staticmethod
-    def getZhongZheng500():
-        pass
+        closingPx = PortfolioProviders.getClosingPx(s_info_windcode)
+        portfolioprovider = PortfolioProvider('Zhongzheng500', portfolio_ts, 'Zhongzheng500 index', closingPx)
+        return portfolioprovider
 
 
     @staticmethod
     def getZhongZheng800():
-        pass
+        """ Create PortfolioProvider for ZhongZheng800 """
+
+        s_info_windcode = '000906.SH'
+
+        sqlQuery = """
+            select S_CON_WINDCODE StockID, TRADE_DT Date, I_WEIGHT Weight
+            from WINDDB.DBO.AINDEXHS300FREEWEIGHT
+            where S_INFO_WINDCODE = '%s' and TRADE_DT > '%s'
+            order by TRADE_DT
+            """ % (s_info_windcode, GlobalConstant.TestStartDate)
+        
+        # Group SQL result by 'Date', aggregating into list of {StockID,Weight} dicts
+        df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
+        df = df.groupby('Date').apply(lambda x: x[['StockID','Weight']].to_dict(orient='records'))
+        print df.head()
+
+        # Create portfolio_is
+        # - create portfolio from time-aggregated Series and add each portfolio to portfolio_ts
+        portfolio_ts = QTimeSeries()
+        for date, holding in df.iteritems():
+            portfolio_ts.Add(date, Portfolio(date, holding))
+
+        # Create PortfolioProvider from portfolio_ts
+        closingPx = PortfolioProviders.getClosingPx(s_info_windcode)
+        portfolioprovider = PortfolioProvider('Zhongzheng800', portfolio_ts, 'Zhongzheng800 index', closingPx)
+        return portfolioprovider
 
 
     @staticmethod
@@ -64,12 +115,9 @@ class PortfolioProviders():
         pass
 
 
-    @staticmethod
-    def fetchInBatches(conn, rs, batchCount, maxrows):
-        pass
-
-
 
 
 
 # print PortfolioProviders.getA50()
+# print PortfolioProviders.getZhongZheng500()
+# print PortfolioProviders.getZhongZheng800()
