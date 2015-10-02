@@ -3,23 +3,18 @@
 # % Date: 8/31/2015
 import sys
 import os
+import cPickle
+import numpy as np
+import Utils
+from Stock import Stock
 from QTimeSeries import QTimeSeries
 
 class Factor:
-    def __init__(self):
-        self.scoreCache = None # store factors scores
-        self.cacheFile = ''  # store scoreCache
-
-        self.name = None #the name of the factor, all upper case
-        self.description=None #briefly describe the factor
-        self.calculator = None # the function handle that calculates factor scores
-        self.univPP = None #universe portfolio provider
-
     def __init__(self, name, desc, delegator, univPP):
         self.name = name
         self.description = desc
         self.calculator = delegator
-        self.cacheFile = None # obj.cacheFile = fullfile(GlobalConstant.DATA_DIR, ['FactorScores\', obj.Name, '.mat']);
+        self.cacheFile = None # obj.cacheFile = fullfile(GlobalConstant.DATA_DIR, ['FactorScores\', obj.Name, '.mat'])
         self.univPP = univPP
         
         # get the score from the cache if it is available
@@ -34,22 +29,22 @@ class Factor:
             # ValueOn or AsOf depending on the parameter, the default is ValueOn
             if len(self.ScoreCache):   # load from cache if it is available
                 if isAsOf:
-                    map = self.ScoreCache.asof(date)
+                    map = self.ScoreCache.ValueAsOf(date)
                 else:
-                    map = self.scoreCache[date]
+                    map = self.scoreCache.ValueOn(date)
                 if not map:
-                    print >> sys.std.err,  'date can not be found in the data cache'
-                factorScore = map(stockID)
+                    print >> sys.stderr,  'date can not be found in the data cache'
+                    return
+                factorScore = map[stockID]
             elif os.exits(self.cacheFile):  # if cache is not available, but cache file exists, load cache from the file
-                self.ScoreCache = load(self.cacheFile)
+                self.ScoreCache = cPickle.load(self.cacheFile)
                 if isAsOf:
-                    map = self.ScoreCache.asof(date)
+                    map = self.ScoreCache.ValueAsOf(date)
                 else:
-                    map = self.ScoreCache[date]
-                factorScore = map(stockID);
+                    map = self.scoreCache.ValueOn(date)
+                factorScore = map[stockID]
             else:
-                factorScore = self.Calculator(stockID,date); #% calculate on the fly
-
+                factorScore = self.Calculator(stockID,date) #% calculate on the fly
         return factorScore
 #
 #         % calculate the factor scores once and save it to the cache file
@@ -59,130 +54,100 @@ class Factor:
         datesLen = len(dates)
         cache = QTimeSeries()
         for i in xrange(datesLen):
-            dt = dates[i];
-            #%disp(datestr(dt,'yyyymmdd'));
-            #%portfolio = GetPortfolioOn(univPP, dt);
-            portfolio = GetPortfolioAsofFixed(univPP, dt)
+            dt = dates[i]
+            #%disp(datestr(dt,'yyyymmdd'))
+            #%portfolio = GetPortfolioOn(univPP, dt)
+            portfolio = univPP.GetPortfolioAsofFixed(dt)
             numHoldings = len(portfolio.Holdings)
-            ids = cell(1, numHoldings);
-            scores = zeros(1, numHoldings);
-            for j = 1:numHoldings
-                score = obj.Calculator(portfolio.Holdings(j).StockID, dt);  %% dt doesn't need to be a trading date? strange
-                %disp([j,size(score)]);
-                scores(j) = score;
-                ids{j} = portfolio.Holdings(j).StockID;
-            end
-            scoreMap = containers.Map(ids, scores);
-            Add(cache, dt, scoreMap);
-        end
-        obj.ScoreCache = cache;
-        save(obj.cacheFile, 'cache');
-    end
+            ids = np.arange(numHoldings)
+            scores = np.zeros(numHoldings)
+            for j in xrange(numHoldings):
+                score = self.Calculator(portfolio.Holdings[j].StockID, dt)  #%% dt doesn't need to be a trading date? strange
+                #%disp([j,size(score)])
+                scores[j] = score
+                ids [j] = portfolio.Holdings[j].StockID
+            scoreMap = dict(zip(ids, scores))
+            cache.Add(dt, scoreMap)
+        self.ScoreCache = cache
+        with open(self.cacheFile, 'w') as fout:
+            cPickle.dump(cache, fout)
+
 #
 #         % transform a raw factor to a Z factor
-#         function zFactor = Z(obj, isSectorNeutral, universe)
-#             univ = [];
-#             if(nargin > 2)
-#                 univ = universe;
-#             elseif (~isempty(obj.UnivPP))
-#                 univ = obj.UnivPP;
-#             else
-#                 error('No universe is defined');
-#             end
-#
-#             zScoreCache = QTimeSeries();
-#             stkScoreMap = [];
-#             % inner function to calculate Z scores from raw scores
-#             function score = zCalc(stkID, date)
-#                 if (~Contains(zScoreCache, date))
-#                     portfolio = GetPortfolioAsofFixed(universe, date);
-#                     if(isempty(portfolio))
-#                         error(['No Portfolio can be found on ', datestr(date,'yyyymmdd')]);
-#                     end
-#
-#                     holdings = portfolio.Holdings;
-#                     numStk = length(holdings);
-#                     rawscores = zeros(numStk,1);
-#                     for i=1:numStk
-#                         stkID = holdings(i).StockID;
-#                         rawscores(i) = GetScore(obj, stkID, date);
-#                     end
-#                     zscores = Utils.WinsorizedZ(rawscores);
-#                     for i=1:numStk
-#                         stkID = holdings(i).StockID;
-#                         stkScoreMap = [stkScoreMap; containers.Map(stkID, zscores(i))];
-#                     end
-#                     Add(zScoreCache, date, stkScoreMap);
-#                 else
-#                     stkScoreMap = ValueOn(zScoreCache, date);
-#                 end
-#
-#                 if(isKey(stkScoreMap, stkID))
-#                     score = stkScoreMap(stkID);
-#                 else
-#                     score = nan;
-#                 end
-#             end
-#
-#             % inner function to calculate sector-neutral Z scores from raw scores
-#             function score = zCalc_SN(stkID, date)
-#                 if (~Contains(zScoreCache, date))
-#                     portfolio = GetPortfolioAsofFixed(universe, date);
-#                     if(isempty(portfolio))
-#                         error(['No Portfolio can be found on ', datestr(date,'yyyymmdd')]);
-#                     end
-#
-#                     holdings = portfolio.Holdings;
-#                     numStk = length(holdings);
-#                     rawscores = zeros(numStk,1);
-#                     groups = cell(numStk,1);
-#                     groupIdx = 1;
-#                     for i=1:numStk
-#                         stkID = holdings(i).StockID;
-#                         rawscores(i) = GetScore(obj, stkID, date);
-#                         sectorCode = WindSectorCode(Stock.ByWindID(stkID), date);
-#                         groups(i) = {sectorCode};
-#                     end
-#                     %groups = char(groups);
-#                     [C, ia, groupIdx] = unique(groups);
-#                     zscores = Utils.WinsorizedZByGroup(rawscores, groupIdx);
-#                     for i=1:numStk
-#                         stkID = holdings(i).StockID;
-#                         stkScoreMap = [stkScoreMap; containers.Map(stkID, zscores(i))];
-#                     end
-#                     Add(zScoreCache, date, stkScoreMap);
-#                 else
-#                     stkScoreMap = ValueOn(zScoreCache, date);
-#                 end
-#
-#                 if(isKey(stkScoreMap, stkID))
-#                     score = stkScoreMap(stkID);
-#                 else
-#                     score = nan;
-#                 end
-#             end
-#
-#             name = [obj.Name, '_Z'];
-#             desc = [obj.Description, '_Z'];
-#             if(isSectorNeutral)
-#                 name = [name, '_SN'];
-#                 desc = [desc, '_SN'];
-#                 zFactor = Factor(name, desc, @zCalc_SN, universe);
-#             else
-#                 zFactor = Factor(name, desc, @zCalc, universe);
-#             end
-#         end
-#
-#         function name = get.Name(obj)
-#             name = obj.Name;
-#         end
-#
-#         function desc = get.Description(obj)
-#             desc = obj.Description;
-#         end
-#
-#         function calc = get.Calculator(obj)
-#             calc = obj.Calculator;
-#         end
-#     end
-# end
+        #needs to be rewritten
+    def Z(self, stkID, isSectorNeutral, universe=None):
+        univ = []
+        if universe:
+            univ = universe
+        elif len(self.UnivPP):
+            univ = self.UnivPP
+        else:
+            print >> sys.stderr, 'No universe is defined'
+            return
+            zScoreCache = QTimeSeries()
+            stkScoreMap = {}
+        name = self.Name + '_Z'
+        desc = self.Description + '_Z'
+        if isSectorNeutral:
+            name += '_SN'
+            desc += '_SN'
+            return Factor(name, desc, zCalc_SN, universe)
+        else:
+            return Factor(name, desc, zCalc, universe)
+
+    # % inner function to calculate Z scores from raw scores
+    def zCalc(self, stkID, date, universe, zScoreCache, stkScoreMap):
+        if date not in zScoreCache:
+            portfolio = universe.GetPortfolioAsofFixed(date)
+            if not len(portfolio):
+                print >> sys.stderr, 'No Portfolio can be found on ', str(date)
+                return
+            holdings = portfolio.Holdings
+            numStk = len(holdings)
+            rawscores = np.zeros(numStk)
+            for i in xrange(numStk):
+                rawscores[i] = self.GetScore(holdings[i].StockID, date)
+            zscores = Utils.WinsorizedZ(rawscores)
+            stkScoreMap.update(dict(zip([holding.stdID for holding in holdings], zscores)))
+            zScoreCache.Add(date, stkScoreMap)
+        else:
+            stkScoreMap = zScoreCache.ValueOn(date)
+
+        return stkScoreMap.get(stkID, np.nan)
+
+
+        #% inner function to calculate sector-neutral Z scores from raw scores
+    def zCalc_SN(self, stkID, date, universe, zScoreCache, stkScoreMap, isSectorNeutral):
+        if date not in zScoreCache:
+            portfolio = universe.GetPortfolioAsofFixed(date)
+            if not len(portfolio):
+                print >> sys.stderr, 'No Portfolio can be found on ', str(date)
+                return
+            holdings = portfolio.Holdings
+            numStk = len(holdings)
+            rawscores = np.zeros(numStk)
+            groups = np.arange(numStk)
+            groupIdx = 1
+            for i in xrange(numStk):
+                stkID = holdings[i].StockID
+                rawscores[i] = self.GetScore(stkID, date)
+                sectorCode = Stock.ByWindID(stkID).WindSectorCode(date)
+                groups[i] = sectorCode
+
+                #%groups = char(groups)
+            #[C, ia, groupIdx] = unique(groups)
+            zscores = Utils.WinsorizedZByGroup(rawscores, groupIdx)
+            stkScoreMap.update(dict(zip([holding.stdID for holding in holdings], zscores)))
+        else:
+            zScoreCache.ValueOn(date)
+        return stkScoreMap.get(stkID, np.nan)
+
+
+    def getName(self):
+        return self.Name
+
+    def getDescription(self):
+        return self.Description
+
+    def getCalculator(self):
+        return self.Calculator
