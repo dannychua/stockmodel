@@ -31,7 +31,7 @@ class PortfolioProviders():
             where S_INFO_WINDCODE = '000016.SH' and TRADE_DT > '%s'
             order by TRADE_DT
             """.format(GlobalConstant.TestStartDate)
-        
+
         # Group SQL result by 'Date', aggregating into list of {StockID,Weight} dicts
         df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
         df = df.groupby('Date').apply(lambda x: x[['StockID','Weight']].to_dict(orient='records'))
@@ -51,12 +51,58 @@ class PortfolioProviders():
 
     @staticmethod
     def getZhongZheng500():
-        pass
+        """ Create PortfolioProvider for ZhongZheng500 """
+
+        sqlQuery = """
+            select S_CON_WINDCODE StockID, TRADE_DT Date, I_WEIGHT Weight
+            from WINDDB.DBO.AINDEXHS300FREEWEIGHT
+            where S_INFO_WINDCODE = '000905.SH' and TRADE_DT > '%s'
+            order by TRADE_DT
+            """.format(GlobalConstant.TestStartDate)
+        
+        # Group SQL result by 'Date', aggregating into list of {StockID,Weight} dicts
+        df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
+        df = df.groupby('Date').apply(lambda x: x[['StockID','Weight']].to_dict(orient='records'))
+        # print df.head()
+
+        # Create portfolio_is
+        # - create portfolio from time-aggregated Series and add each portfolio to portfolio_ts
+        portfolio_ts = QTimeSeries()
+        for date, holding in df.iteritems():
+            portfolio_ts.Add(date, Portfolio(date, holding))
+
+        # Create PortfolioProvider from portfolio_ts
+        closingPx = PortfolioProviders.getClosingPx('000905.SH')
+        zhongzheng500PP = PortfolioProvider('Zhongzheng500', portfolio_ts, 'Zhongzheng500 index', closingPx)
+        return zhongzheng500PP
 
 
     @staticmethod
     def getZhongZheng800():
-        pass
+        """ Create PortfolioProvider for ZhongZheng800 """
+
+        sqlQuery = """
+            select S_CON_WINDCODE StockID, TRADE_DT Date, I_WEIGHT Weight
+            from WINDDB.DBO.AINDEXHS300FREEWEIGHT
+            where S_INFO_WINDCODE = '000906.SH' and TRADE_DT > '%s'
+            order by TRADE_DT
+            """.format(GlobalConstant.TestStartDate)
+        
+        # Group SQL result by 'Date', aggregating into list of {StockID,Weight} dicts
+        df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
+        df = df.groupby('Date').apply(lambda x: x[['StockID','Weight']].to_dict(orient='records'))
+        # print df.head()
+
+        # Create portfolio_is
+        # - create portfolio from time-aggregated Series and add each portfolio to portfolio_ts
+        portfolio_ts = QTimeSeries()
+        for date, holding in df.iteritems():
+            portfolio_ts.Add(date, Portfolio(date, holding))
+
+        # Create PortfolioProvider from portfolio_ts
+        closingPx = PortfolioProviders.getClosingPx('000906.SH')
+        zhongzheng800PP = PortfolioProvider('Zhongzheng800', portfolio_ts, 'Zhongzheng800 index', closingPx)
+        return zhongzheng800PP
 
 
     @staticmethod
@@ -72,4 +118,6 @@ class PortfolioProviders():
 
 
 
-# print PortfolioProviders.getA50()
+print PortfolioProviders.getA50()
+print PortfolioProviders.getZhongZheng500()
+print PortfolioProviders.getZhongZheng800()
