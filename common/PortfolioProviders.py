@@ -111,13 +111,37 @@ class PortfolioProviders():
 
 
     @staticmethod
-    def getClosingPx(idxWindID):
-        pass
+    def getClosingPx(s_info_windcode):
+
+        sqlQuery = """
+            select TRADE_DT Date, S_DQ_CLOSE ClosingPx
+            from WINDDB.DBO.AIndexEODPrices
+            where S_INFO_WINDCODE = '%s' and TRADE_DT > '%s'
+            order by TRADE_DT
+            """ % (s_info_windcode, GlobalConstant.TestStartDate)
+
+        df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
+        print df.head()
+        dates = df['Date'].tolist()
+        closingPx = df['ClosingPx'].tolist()
+        return QTimeSeries(dates, closingPx)
+
+
+
+    # TODO: HS300, ??500, CalibrationUniv, ScoringUniv
+    # the way to construct HS300, ??500 is similar to A50
+    # both CalibrationUniv and ScoringUniv are equal weighted
+    # CalibrationUniv is all about filtering out small/illiquid stocks
 
 
 
 
 
-# print PortfolioProviders.getA50()
+# portfolio = PortfolioProviders.getA50().GetPortfolioOn('20090401')
+# holdings = portfolio.getHoldings()
+# print holdings[0]
+
+# print PortfolioProviders.getA50().getAvailableDates()
 # print PortfolioProviders.getZhongZheng500()
 # print PortfolioProviders.getZhongZheng800()
+# print PortfolioProviders.getClosingPx('000016.SH').qseries.iloc[0]
