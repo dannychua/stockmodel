@@ -86,8 +86,8 @@ class Factor:
             return
             zScoreCache = QTimeSeries()
             stkScoreMap = {}
-        name = self.Name + '_Z'
-        desc = self.Description + '_Z'
+        name = self.name + '_Z'
+        desc = self.description + '_Z'
         if isSectorNeutral:
             name += '_SN'
             desc += '_SN'
