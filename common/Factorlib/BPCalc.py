@@ -19,7 +19,3 @@ def BPCalc(stockID, date):
 	df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
 	bp = df.iloc[0]['BP']
 	return bp
-
-
-
-# print BPCalc('600230.SH', '20140808')
