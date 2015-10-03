@@ -91,9 +91,9 @@ class Factor:
         if isSectorNeutral:
             name += '_SN'
             desc += '_SN'
-            return Factor(name, desc, zCalc_SN, universe)
+            return Factor(name, desc, self.zCalc_SN, universe)
         else:
-            return Factor(name, desc, zCalc, universe)
+            return Factor(name, desc, self.zCalc, universe)
 
     # % inner function to calculate Z scores from raw scores
     def zCalc(self, stkID, date, universe, zScoreCache, stkScoreMap):
