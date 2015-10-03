@@ -75,7 +75,7 @@ class Factor:
 #
 #         % transform a raw factor to a Z factor
         #needs to be rewritten
-    def Z(self, stkID, isSectorNeutral, universe=None):
+    def Z(self, isSectorNeutral, universe=None):
         univ = []
         if universe:
             univ = universe
