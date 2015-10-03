@@ -4,10 +4,14 @@ Build factor score cache for all factors
 
 import os
 import sys
+from datetime import datetime
 import cPickle as pickle
 import common.GlobalConstant as GlobalConstant
 from common.Factor import Factor
 from common.PortfolioProviders import PortfolioProviders
+import common.QDate as QDate
+from common.Factor import Factor
+import common.Factorlib.BPCalc as BPCalc
 
 
 
@@ -80,5 +84,25 @@ def getAllPPFromDb():
     return (a50PP, zz800PP)
 
 
+# # Build Factor cache
+# buildFactorCache()
 
-buildFactorCache()
+# Setup datetimes
+WeekDts = QDate.WeekEndsBtw( datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
+MonthDts = QDate.MonthEndsBtw( datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
+CacheDts = QDate.UnionDistinct(WeekDts, MonthDts)
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Bugs in imported modules, unable to continue
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# Calculate Scores and Save
+a50PP, zz800PP = getAllPP()
+BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
+zBP = BP.Z(False, zz800PP)
+zBP_SN = BP.Z(True, zz800PP)
+
+BP.CalcScoresAndSave(CacheDts, zz800PP)
+zBP.CalcScoresAndSave(CacheDts, zz800PP)
+zBP_SN.CalcScoresAndSave(CacheDts, zz800PP)
