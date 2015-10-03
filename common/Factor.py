@@ -44,7 +44,7 @@ class Factor:
                     map = self.scoreCache.ValueOn(date)
                 factorScore = map[stockID]
             else:
-                factorScore = self.Calculator(stockID,date) #% calculate on the fly
+                factorScore = self.calculator(stockID,date) #% calculate on the fly
         return factorScore
 #
 #         % calculate the factor scores once and save it to the cache file
@@ -62,7 +62,7 @@ class Factor:
             ids = np.arange(numHoldings)
             scores = np.zeros(numHoldings)
             for j in xrange(numHoldings):
-                score = self.Calculator(portfolio.Holdings[j].StockID, dt)  #%% dt doesn't need to be a trading date? strange
+                score = self.calculator(portfolio.Holdings[j].StockID, dt)  #%% dt doesn't need to be a trading date? strange
                 #%disp([j,size(score)])
                 scores[j] = score
                 ids [j] = portfolio.Holdings[j].StockID
@@ -150,4 +150,4 @@ class Factor:
         return self.Description
 
     def getCalculator(self):
-        return self.Calculator
+        return self.calculator
