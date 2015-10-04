@@ -85,7 +85,7 @@ def getAllPPFromDb():
 
 
 # # Build Factor cache
-# buildFactorCache()
+buildFactorCache()
 
 # Setup datetimes
 WeekDts = QDate.WeekEndsBtw( datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
@@ -97,12 +97,13 @@ CacheDts = QDate.UnionDistinct(WeekDts, MonthDts)
 # Bugs in imported modules, unable to continue
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-# Calculate Scores and Save
+# Setup PortfolioProviders
 a50PP, zz800PP = getAllPP()
 BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
 zBP = BP.Z(False, zz800PP)
 zBP_SN = BP.Z(True, zz800PP)
 
+# Calculate Scores and Save
 BP.CalcScoresAndSave(CacheDts, zz800PP)
 zBP.CalcScoresAndSave(CacheDts, zz800PP)
 zBP_SN.CalcScoresAndSave(CacheDts, zz800PP)
