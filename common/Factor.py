@@ -44,7 +44,7 @@ class Factor:
                     map = self.scoreCache.ValueOn(date)
                 factorScore = map[stockID]
             else:
-                factorScore = self.Calculator(stockID,date) #% calculate on the fly
+                factorScore = self.calculator(stockID,date) #% calculate on the fly
         return factorScore
 #
 #         % calculate the factor scores once and save it to the cache file
@@ -62,7 +62,7 @@ class Factor:
             ids = np.arange(numHoldings)
             scores = np.zeros(numHoldings)
             for j in xrange(numHoldings):
-                score = self.Calculator(portfolio.Holdings[j].StockID, dt)  #%% dt doesn't need to be a trading date? strange
+                score = self.calculator(portfolio.Holdings[j].StockID, dt)  #%% dt doesn't need to be a trading date? strange
                 #%disp([j,size(score)])
                 scores[j] = score
                 ids [j] = portfolio.Holdings[j].StockID
@@ -75,7 +75,7 @@ class Factor:
 #
 #         % transform a raw factor to a Z factor
         #needs to be rewritten
-    def Z(self, stkID, isSectorNeutral, universe=None):
+    def Z(self, isSectorNeutral, universe=None):
         univ = []
         if universe:
             univ = universe
@@ -86,14 +86,14 @@ class Factor:
             return
             zScoreCache = QTimeSeries()
             stkScoreMap = {}
-        name = self.Name + '_Z'
-        desc = self.Description + '_Z'
+        name = self.name + '_Z'
+        desc = self.description + '_Z'
         if isSectorNeutral:
             name += '_SN'
             desc += '_SN'
-            return Factor(name, desc, zCalc_SN, universe)
+            return Factor(name, desc, self.zCalc_SN, universe)
         else:
-            return Factor(name, desc, zCalc, universe)
+            return Factor(name, desc, self.zCalc, universe)
 
     # % inner function to calculate Z scores from raw scores
     def zCalc(self, stkID, date, universe, zScoreCache, stkScoreMap):
@@ -150,4 +150,4 @@ class Factor:
         return self.Description
 
     def getCalculator(self):
-        return self.Calculator
+        return self.calculator
