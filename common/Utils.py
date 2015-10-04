@@ -10,14 +10,14 @@ def Str2Date(date):
 
 def WinsorizedZ(rawscores, Cap = 3.5, Tolerance = 0.1):
     ''' return a winsorized Z scores, where winsorization is robust normalization
-    :param rawscores: an array of raw scores which may include NaN
+    :param rawscores: a ndarray (numpy array) of raw scores which may include NaN
     :param Cap: the maximum Z scores
     :param Tolerance: the iteration converges when the difference of the adjacent iterations is less than Tolerance
     :return: winsorized Z scores
     '''
     n = len(rawscores)
-    avg = numpy.average(rawscores)   ## can it handle NaN?
-    stdev = numpy.std(rawscores)     ## is it simple sample standard deviation? does it handle NaN?
+    avg = numpy.nanmean(rawscores)
+    stdev = numpy.nanstd(rawscores)
     if numpy.isnan(avg) or numpy.isnan(stdev) or numpy.isinf(avg) or numpy.isinf(stdev):
         return rawscores
 
@@ -27,8 +27,8 @@ def WinsorizedZ(rawscores, Cap = 3.5, Tolerance = 0.1):
 
     t = 100
     while t > Cap + Tolerance:
-        avg = numpy.average(zscores)
-        stdev = numpy.std(zscores)
+        avg = numpy.nanmean(zscores)
+        stdev = numpy.nanstd(zscores)
 
         for i in range(n):
             tmpZ = (zscores[i]-avg)/stdev
@@ -39,16 +39,17 @@ def WinsorizedZ(rawscores, Cap = 3.5, Tolerance = 0.1):
             else:
                 zscores[i] = tmpZ
 
-        max1 = abs(numpy.max(zscores))  ## can it handle NaN?
+        max1 = abs(numpy.max(zscores))
         min1 = abs(numpy.min(zscores))
         if numpy.isnan(max1) or numpy.isnan(min1):
             return zscores
+        t = max(max1, min1)
 
-    t = max(max1, min1)
-    avg = numpy.average(rawscores)   ## can it handle NaN?
-    stdev = numpy.std(rawscores)     ## is it simple sample standard deviation? does it handle NaN?
+    avg = numpy.nanmean(zscores)
+    stdev = numpy.nanstd(zscores)
     for i in range(n):
-        zscores[i] = (rawscores[i]-avg)/stdev
+        zscores[i] = (zscores[i]-avg)/stdev
+    return zscores
 
 
 def WinsorizedZByGroup(rawscores, groups, Cap = 3.5, Tolerance = 0.1):
@@ -75,3 +76,4 @@ def WinsorizedZByGroup(rawscores, groups, Cap = 3.5, Tolerance = 0.1):
         else:
             zscores[idx] = WinsorizedZ(subrawscores, Cap, Tolerance)
 
+    return zscores
