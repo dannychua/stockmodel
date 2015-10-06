@@ -4,7 +4,7 @@
 import pandas as pd
 import matplotlib as plt
 from Utils import Str2Date
-
+from datetime import datetime
 
 class QTimeSeries():
 
@@ -12,6 +12,8 @@ class QTimeSeries():
         if len(dates) != len(values):
             print 'dates has different length as values'
             return
+        if len(dates) and type(dates[0]) is str:
+            dates = [Str2Date(d) for d in dates]
         self.__qSeries = pd.Series(data=values, index=dates)
         self.__qSeries = self.__qSeries.sort_index()
 
@@ -22,7 +24,7 @@ class QTimeSeries():
         date = Str2Date(date)
         if date not in self.__qSeries:
             self.__qSeries[date] = value
-            self.__qSeries = self.__qSeries.reindex(sorted(self.__qSeries.index))
+            self.__qSeries = self.__qSeries.sort_index()
         else:
             self.__qSeries[date] = value
 

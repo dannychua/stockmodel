@@ -7,6 +7,7 @@ import cPickle
 import numpy as np
 import Utils
 from Stock import Stock
+from datetime import datetime
 from QTimeSeries import QTimeSeries
 
 class Factor:
@@ -53,8 +54,8 @@ class Factor:
     def CalcScoresAndSave(self, dates, univPP):
         datesLen = len(dates)
         cache = QTimeSeries()
-        for i in xrange(datesLen):
-            dt = dates[i]
+        for dt in dates:
+            dt = datetime(dt.year, dt.month, dt.day)
             #%disp(datestr(dt,'yyyymmdd'))
             #%portfolio = GetPortfolioOn(univPP, dt)
             portfolio = univPP.GetPortfolioAsofFixed(dt)

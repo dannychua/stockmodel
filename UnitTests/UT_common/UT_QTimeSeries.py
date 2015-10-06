@@ -1,11 +1,13 @@
 from common.QTimeSeries import QTimeSeries
 from datetime import datetime
+from common.Utils import Str2Date
 
 if __name__ == '__main__':
     # init QTimeSeries
     x = ['a', 'b', 'c'] #values
     y = [datetime(2014,2,15), datetime(2013,12,11), datetime(2015,6,13)] #dates
     pd = QTimeSeries(dates=y, values=x)
+
 
     # print Dates
     print pd.Dates
@@ -39,3 +41,6 @@ if __name__ == '__main__':
 
     #test ValueOn
     print pd.ValueOn(datetime(2014,2,15))
+
+    print pd.Contains(Str2Date('20131211'))
+    print Str2Date('20131211')

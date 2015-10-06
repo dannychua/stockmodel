@@ -1,11 +1,11 @@
 __author__ = 'xiaodan'
-import time
+from datetime import datetime
 import numpy
 
 def Str2Date(date):
     '''date will be converted as a datetime obj if the date is a string,with the format "yyyymmdd" '''
     if type(date) is str:
-        return time.strptime(date, '%Y%m%d')
+        return datetime.strptime(date, '%Y%m%d')
     return date
 
 def WinsorizedZ(rawscores, Cap = 3.5, Tolerance = 0.1):
