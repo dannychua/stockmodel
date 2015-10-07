@@ -1,6 +1,7 @@
 import numpy as np
 from Utils import Str2Date
 from Stock import Stock
+from Holding import Holding
 import sys
 # %% header
 # % handle a portfolio and the related logic
@@ -12,22 +13,22 @@ import sys
 # % it is a handle class
 
 class Portfolio:
-
-    def __init__(self):
-        self.Date = None         # the date on which the portfolio is evaluated
-        self.__Holdings = []       # the stocks held and their weights in the portfolio, could be empty
-        self.MarketValue = None  # the market value of the portfolio, could be negative or null
-
     #% holdings could be empty
     #% dim is the length of the portfolio array, used to initiate an array of portfolios
     #% to be implemented: it'd better remove 'dim' as a parameter
     def __init__(self, date, holdings=[]):
         self.Date = date
         if len(holdings):
-            self.__Holdings = holdings
+            holding_new = holdings
+            if type(holdings[0]) is dict:
+                holding_new = [Holding(holding) for holding in holdings]
+            self.__Holdings = holding_new
 
     def AddHolding(self, holding):
-        self.__Holdings.append(holding)
+        if type(holding) is dict:
+            self.__Holdings.append(Holding(holding))
+        else:
+            self.__Holdings.append(holding)
 
     #% re-weight the portfolio to be equal weighted
     def ReWeightEqual(self):
@@ -94,7 +95,8 @@ class Portfolio:
                 print >> sys.stderr, 'less than 95% of the portfolio has valid returns'
 
     def GetStockIDs(self):
-        return str(self.__Holdings.StockID)
+        return [h.StockID for h in self.__Holdings]
 
-    def getHoldings(self):
+    @property
+    def Holdings(self):
         return self.__Holdings

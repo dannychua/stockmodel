@@ -9,13 +9,14 @@ import Utils
 from Stock import Stock
 from datetime import datetime
 from QTimeSeries import QTimeSeries
+import GlobalConstant
 
 class Factor:
     def __init__(self, name, desc, delegator, univPP):
         self.name = name
         self.description = desc
         self.calculator = delegator
-        self.cacheFile = None # obj.cacheFile = fullfile(GlobalConstant.DATA_DIR, ['FactorScores\', obj.Name, '.mat'])
+        self.cacheFile = os.path.join(GlobalConstant.DATA_DIR, 'FactorScores', name+'.mat')
         self.univPP = univPP
         
         # get the score from the cache if it is available
@@ -52,26 +53,23 @@ class Factor:
 #         % dates is a vector of Matlab dates on which the scores are calculated and saved
 #         % univPP is a universe PortfolioProvider
     def CalcScoresAndSave(self, dates, univPP):
-        datesLen = len(dates)
-        cache = QTimeSeries()
+
+        scoreMaps = []
         for dt in dates:
-            dt = datetime(dt.year, dt.month, dt.day)
-            #%disp(datestr(dt,'yyyymmdd'))
-            #%portfolio = GetPortfolioOn(univPP, dt)
-            portfolio = univPP.GetPortfolioAsofFixed(dt)
-            numHoldings = len(portfolio.Holdings)
-            ids = np.arange(numHoldings)
-            scores = np.zeros(numHoldings)
-            for j in xrange(numHoldings):
-                score = self.calculator(portfolio.Holdings[j].StockID, dt)  #%% dt doesn't need to be a trading date? strange
+            print dt
+            port = univPP.GetPortfolioAsofFixed(dt)
+            ids = []
+            scores = []
+            for holding in port.Holdings:
+                score = self.calculator(holding.StockID, dt.strftime('%Y%m%d'))  #%% dt doesn't need to be a trading date? strange
                 #%disp([j,size(score)])
-                scores[j] = score
-                ids [j] = portfolio.Holdings[j].StockID
+                scores.append(score)
+                ids.append(holding.StockID)
             scoreMap = dict(zip(ids, scores))
-            cache.Add(dt, scoreMap)
-        self.ScoreCache = cache
+            scoreMaps.append(scoreMap)
+        self.ScoreCache = QTimeSeries(dates=dates, values=scoreMaps)
         with open(self.cacheFile, 'w') as fout:
-            cPickle.dump(cache, fout)
+            cPickle.dump(self.ScoreCache, fout)
 
 #
 #         % transform a raw factor to a Z factor

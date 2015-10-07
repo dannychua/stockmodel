@@ -4,29 +4,36 @@
 import pandas as pd
 import matplotlib as plt
 from Utils import Str2Date
-from datetime import datetime
+
 
 class QTimeSeries():
-
     def __init__(self, dates=[], values=[]):
         if len(dates) != len(values):
             print 'dates has different length as values'
             return
+        self.valueDict = {}
         if len(dates) and type(dates[0]) is str:
             dates = [Str2Date(d) for d in dates]
-        self.__qSeries = pd.Series(data=values, index=dates)
-        self.__qSeries = self.__qSeries.sort_index()
+        for idx, value in enumerate(values):
+            self.valueDict[idx] = value
+        self.qSeries = pd.Series(data=xrange(len(values)), index=dates)
+        self.qSeries = self.qSeries.sort_index()
+
 
 # % date is either double in the format of datenum, or char in the
 # % format of 'yyyymmdd'
 
     def Add(self, date, value):
         date = Str2Date(date)
-        if date not in self.__qSeries:
-            self.__qSeries[date] = value
-            self.__qSeries = self.__qSeries.sort_index()
+        if date not in self.qSeries:
+            loc = len(self.valueDict)
+            self.qSeries[date] = loc
+            self.valueDict[loc] = value
+            self.qSeries = self.qSeries.sort_index()
         else:
-            self.__qSeries[date] = value
+            loc = self.qSeries[date]
+            self.valueDict[loc] = value
+        return loc
 
 
 #         % return the value on date if the date exists
@@ -35,8 +42,8 @@ class QTimeSeries():
 #         % format of 'yyyymmdd'
     def ValueOn(self, date):
         date = Str2Date(date)
-        if date in self.__qSeries:
-            return self.__qSeries[date]
+        if date in self.qSeries:
+            return self.valueDict[self.qSeries[date]]
         return None
 
 
@@ -46,27 +53,29 @@ class QTimeSeries():
 #         % format of 'yyyymmdd'
     def ValueAsOf(self, date):
         date = Str2Date(date)
-        return self.__qSeries.asof(date)
+        if len(self.qSeries):
+            return self.valueDict[self.qSeries.asof(date)]
+        return None
 #
 #         % return the value immediately after date
 #         % if date > the last date, return NaN
 #         % date is either double in the format of datenum, or char in the
 #         % format of 'yyyymmdd'
     def ValueAfter(self, date):
-        results = self.__qSeries[self.__qSeries.index > date]
+        results = self.qSeries[self.qSeries.index > date]
         if len(results):
-            return results[0]
+            return self.valueDict[results[0]]
         return None
 
     def Contains(self, date):
         date = Str2Date(date)
-        if date in self.__qSeries:
+        if date in self.qSeries:
             return True
         return False
 
     def plotTS(self, Title):
-        if len(self.__qSeries) and isinstance(self.__qSeries[0], (int, long, float, complex)):
-            plt.plot(self.__qSeries.index, self.__qSeries.values)
+        if len(self.qSeries) and isinstance(self.qSeries[0], (int, long, float, complex)):
+            plt.plot(self.qSeries.index, self.qSeries.values)
         # function plotTS(obj, Title)
         #     if (~isnumeric(obj.Values{1}))
         #         error('its value is not numeric, so it can not be ploted');
@@ -85,23 +94,23 @@ class QTimeSeries():
 
     def Remove(self, date):
         date = Str2Date(date)
-        self.__qSeries = self.__qSeries[self.__qSeries.index != date]
+        self.qSeries = self.qSeries[self.qSeries.index != date]
 
     @property
     def length(self):
-        return len(self.__qSeries)
+        return len(self.qSeries)
 
     @property
     def Dates(self):
-        return self.__qSeries.index
+        return self.qSeries.index
 
     @property
     def FirstDate(self):
-        return self.__qSeries.index[0]
+        return self.qSeries.index[0]
 
     @property
     def Series(self):
-        return self.__qSeries
+        return self.qSeries
 
 
 

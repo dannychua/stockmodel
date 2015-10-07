@@ -7,10 +7,10 @@
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% not needed
 
 
-class Holding():
-    def __init__(self, stock, weight, shares=None, marketValue=None):
-        self.StockID = stock              # the stockID held
-        self.Weight = weight              # number of shares held, could be negative or null
-        self.Shares = shares
-        self.MarketValue = marketValue    #the market value of the holding, could be negative or null
-
+class Holding(object):
+    def __init__(self, *initial_data, **kwargs):
+        for dictionary in initial_data:
+            for key in dictionary:
+                setattr(self, key, dictionary[key])
+        for key in kwargs:
+            setattr(self, key, kwargs[key])

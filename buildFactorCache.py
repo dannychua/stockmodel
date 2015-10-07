@@ -11,7 +11,7 @@ from common.Factor import Factor
 from common.PortfolioProviders import PortfolioProviders
 import common.QDate as QDate
 from common.Factor import Factor
-import common.Factorlib.BPCalc as BPCalc
+from common.Factorlib.BPCalc import BPCalc
 
 
 
@@ -53,9 +53,9 @@ def getAllPPFromCache():
     zz800ppCachePath = os.path.join(universesPath, 'zz800PP.dat')
 
     # Decode pickled objects
-    f = file(a50ppCachePath, 'rb')
+    f = file(a50ppCachePath, 'r')
     a50PP = pickle.load(f)
-    f = file(zz800ppCachePath, 'rb')
+    f = file(zz800ppCachePath, 'r')
     zz800PP = pickle.load(f)
 
     return (a50PP, zz800PP)
@@ -88,8 +88,8 @@ def getAllPPFromDb():
 buildFactorCache()
 
 # Setup datetimes
-WeekDts = QDate.WeekEndsBtw( datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
-MonthDts = QDate.MonthEndsBtw( datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
+WeekDts = QDate.WeekEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
+MonthDts = QDate.MonthEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
 CacheDts = QDate.UnionDistinct(WeekDts, MonthDts)
 
 

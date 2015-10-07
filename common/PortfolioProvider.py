@@ -89,3 +89,7 @@ class PortfolioProvider:
     @property
     def Desc(self):
         return self.__Desc
+
+    @property
+    def Portfolios(self):
+        return self.__Portfolios
