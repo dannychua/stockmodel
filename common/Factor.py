@@ -16,7 +16,9 @@ class Factor:
         self.name = name
         self.description = desc
         self.calculator = delegator
-        self.cacheFile = os.path.join(GlobalConstant.DATA_DIR, 'FactorScores', name+'.mat')
+        if not os.path.exists(GlobalConstant.DATA_DIR+'/FactorScores/'):
+            os.mkdir(GlobalConstant.DATA_DIR+'/FactorScores/')
+        self.cacheFile = GlobalConstant.DATA_DIR+'/FactorScores/' + name+'.mat'
         self.univPP = univPP
         
         # get the score from the cache if it is available
@@ -55,8 +57,7 @@ class Factor:
     def CalcScoresAndSave(self, dates, univPP):
 
         scoreMaps = []
-        for dt in dates:
-            print dt
+        for idx, dt in enumerate(dates):
             port = univPP.GetPortfolioAsofFixed(dt)
             ids = []
             scores = []
