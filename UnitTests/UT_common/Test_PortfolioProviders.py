@@ -10,5 +10,6 @@ def test_getClosingPx():
 def test_getA50():
 	portfolioProvider = PortfolioProviders.getA50()
 	portfolio = portfolioProvider.GetPortfolioOn('20090401')
-	holdings = portfolio.Holdings()
-	assert_equal(holdings[0], {'Weight': 0.274, 'StockID': '601991.SH'})
+	holdings = portfolio.Holdings
+	holding = holdings[0]
+	assert_equal((holding.Weight, holding.StockID), (0.274, '601991.SH'))
