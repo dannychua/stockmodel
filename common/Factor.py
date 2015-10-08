@@ -11,31 +11,32 @@ from datetime import datetime
 from QTimeSeries import QTimeSeries
 import GlobalConstant
 
+
 class Factor:
     def __init__(self, name, desc, delegator, univPP):
-        self.name = name
-        self.description = desc
-        self.calculator = delegator
+        self.Name = name
+        self.Description = desc
+        self.Calculator = delegator
         if not os.path.exists(GlobalConstant.DATA_DIR+'/FactorScores/'):
             os.mkdir(GlobalConstant.DATA_DIR+'/FactorScores/')
         self.cacheFile = GlobalConstant.DATA_DIR+'/FactorScores/' + name+'.mat'
-        self.univPP = univPP
+        self.UnivPP = univPP
         
         # get the score from the cache if it is available
         # otherwise calculate it on the fly
         # if the cache exists, but the date or the stock doesn't not,
         # return NaN
-        # call self.calculator directly if calculating on the fly
+        # call self.Calculator directly if calculating on the fly
 
     def getScore(self, stockID, date, isAsOf=False):
         # % ValueOn or AsOf depending on the parameter, the default is ValueOn
-        if not self.scoreCache: #load from cache if it is available
+        if not self.ScoreCache: #load from cache if it is available
             # ValueOn or AsOf depending on the parameter, the default is ValueOn
             if len(self.ScoreCache):   # load from cache if it is available
                 if isAsOf:
                     map = self.ScoreCache.ValueAsOf(date)
                 else:
-                    map = self.scoreCache.ValueOn(date)
+                    map = self.ScoreCache.ValueOn(date)
                 if not map:
                     print >> sys.stderr,  'date can not be found in the data cache'
                     return
@@ -45,10 +46,10 @@ class Factor:
                 if isAsOf:
                     map = self.ScoreCache.ValueAsOf(date)
                 else:
-                    map = self.scoreCache.ValueOn(date)
+                    map = self.ScoreCache.ValueOn(date)
                 factorScore = map[stockID]
             else:
-                factorScore = self.calculator(stockID,date) #% calculate on the fly
+                factorScore = self.Calculator(stockID,date) #% calculate on the fly
         return factorScore
 #
 #         % calculate the factor scores once and save it to the cache file
@@ -62,7 +63,7 @@ class Factor:
             ids = []
             scores = []
             for holding in port.Holdings:
-                score = self.calculator(holding.StockID, dt.strftime('%Y%m%d'))  #%% dt doesn't need to be a trading date? strange
+                score = self.Calculator(holding.StockID, dt.strftime('%Y%m%d'))  #%% dt doesn't need to be a trading date? strange
                 #%disp([j,size(score)])
                 scores.append(score)
                 ids.append(holding.StockID)
@@ -86,8 +87,8 @@ class Factor:
             return
             zScoreCache = QTimeSeries()
             stkScoreMap = {}
-        name = self.name + '_Z'
-        desc = self.description + '_Z'
+        name = self.Name + '_Z'
+        desc = self.Description + '_Z'
         if isSectorNeutral:
             name += '_SN'
             desc += '_SN'
@@ -96,12 +97,12 @@ class Factor:
             return Factor(name, desc, self.zCalc, universe)
 
     # % inner function to calculate Z scores from raw scores
-    def zCalc(self, stkID, date, universe, zScoreCache, stkScoreMap):
+    def zCalc(self, stkID, date):
         if date not in zScoreCache:
-            portfolio = universe.GetPortfolioAsofFixed(date)
+            portfolio = self.UnivPP.GetPortfolioAsofFixed(date)
             if not len(portfolio):
                 print >> sys.stderr, 'No Portfolio can be found on ', str(date)
-                return
+                return np.nan
             holdings = portfolio.Holdings
             numStk = len(holdings)
             rawscores = np.zeros(numStk)
@@ -117,7 +118,7 @@ class Factor:
 
 
         #% inner function to calculate sector-neutral Z scores from raw scores
-    def zCalc_SN(self, stkID, date, universe, zScoreCache, stkScoreMap, isSectorNeutral):
+    def zCalc_SN(self, stkID, date):
         if date not in zScoreCache:
             portfolio = universe.GetPortfolioAsofFixed(date)
             if not len(portfolio):
@@ -142,12 +143,14 @@ class Factor:
             zScoreCache.ValueOn(date)
         return stkScoreMap.get(stkID, np.nan)
 
-
-    def getName(self):
+    @property
+    def Name(self):
         return self.Name
 
-    def getDescription(self):
+    @property
+    def Description(self):
         return self.Description
 
-    def getCalculator(self):
-        return self.calculator
+    @property
+    def Calculator(self):
+        return self.Calculator
