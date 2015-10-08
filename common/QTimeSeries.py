@@ -10,14 +10,19 @@ class QTimeSeries():
     def __init__(self, dates=[], values=[]):
         if len(dates) != len(values):
             print 'dates has different length as values'
+            print len(dates)
+            print len(values)
             return
         self.valueDict = {}
         if len(dates) and type(dates[0]) is str:
             dates = [Str2Date(d) for d in dates]
         for idx, value in enumerate(values):
             self.valueDict[idx] = value
-        self.qSeries = pd.Series(data=xrange(len(values)), index=dates)
-        self.qSeries = self.qSeries.sort_index()
+        if not len(dates):
+            self.qSeries = pd.Series()
+        else:
+            self.qSeries = pd.Series(data=xrange(len(values)), index=dates)
+            self.qSeries = self.qSeries.sort_index()
 
 
 # % date is either double in the format of datenum, or char in the
