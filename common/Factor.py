@@ -51,7 +51,11 @@ class Factor:
                 map = self.ScoreCache.ValueAsOf(date)
             else:
                 map = self.ScoreCache.ValueOn(date)
-            factorScore = map[stockID]
+            if not map:
+                print >> sys.stderr,  'date can not be found in the data cache file'
+                factorScore = np.nan
+            else:
+                factorScore = map[stockID]
         else:
             factorScore = self.Calculator(stockID,date) #% calculate on the fly
         return factorScore
