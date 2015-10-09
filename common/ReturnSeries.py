@@ -33,9 +33,15 @@ class ReturnSeries(QTimeSeries):
 
     def __calc(self):
         """ Calculates various statistics of the portfolio's returns """
-        if self.Series.shape[0] >= 2:
 
-            daysDelta = self.Series.iloc[1] - self.Series.iloc[0]
+        # Create timeseries from qSeries and valueDict
+        qSeries, valueDict = self.Series
+        timeseries = qSeries.copy()
+        for index, row in qSeries.iteritems():
+            timeseries.loc[index] = valueDict[row]    # variable 'row' is an reference index for valueDict
+        
+        if timeseries.shape[0] >= 2:
+            daysDelta = timeseries.iloc[1] - timeseries.iloc[0]
             if daysDelta == 1 | daysDelta == 3:     # If weekday
                 self.__annScalar = 252
             if daysDelta == 7:                      # If weekly
@@ -47,17 +53,17 @@ class ReturnSeries(QTimeSeries):
 
 
             # Calculate statistics
-            mean = self.Series.mean()
-            std = self.Series.std()
-            self.__returns = self.Series.tolist()
+            mean = timeseries.mean()
+            std = timeseries.std()
+            self.__returns = timeseries.tolist()
             self.__annMean = mean * self.__annScalar
             self.__annStd = std * self.__annScalar
             self.__sr = math.sqrt(self.__annScalar) * mean / std
 
             # TODO: need to handle the number of periods in a year
             numPeriods = len(self.__returns)
-            self.__compCumReturns = self.Series.cumprod()
-            self.__cumReturns = self.Series.cumsum()
+            self.__compCumReturns = timeseries.cumprod()
+            self.__cumReturns = timeseries.cumsum()
 
 
     def plot(self, type='cr', desc=''):
@@ -81,7 +87,7 @@ class ReturnSeries(QTimeSeries):
 
 
     @property
-    def annMean():
+    def annMean(self):
         """ Annualized mean """
         if not hasattr(self, '__annMean'):
             self.__calc()
@@ -132,6 +138,7 @@ class ReturnSeries(QTimeSeries):
 
 
 
-# returnSeries = ReturnSeries(['20100101', '20100102', '20100103', '20100104'], [1,2,3,4])
-# print returnSeries.returns 
+returnSeries = ReturnSeries(['20100101', '20100102', '20100103', '20100104'], [111,222,333,444])
+print returnSeries.annMean
+# print returnSeries.returns
 # print returnSeries.compCumReturns
