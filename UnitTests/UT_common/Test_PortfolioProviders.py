@@ -4,7 +4,7 @@ from common.PortfolioProviders import PortfolioProviders
 
 def test_getClosingPx():
 	closingPx_ts = PortfolioProviders.getClosingPx('000016.SH')
-	assert_equal(closingPx_ts.Series.iloc[0], 1436.885)
+	assert_equal(closingPx_ts.Timeseries.iloc[0], 1436.885)
 
 
 def test_getA50():
