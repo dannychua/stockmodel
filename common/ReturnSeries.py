@@ -33,15 +33,9 @@ class ReturnSeries(QTimeSeries):
 
     def __calc(self):
         """ Calculates various statistics of the portfolio's returns """
-
-        # Create timeseries from qSeries and valueDict
-        qSeries, valueDict = self.Series
-        timeseries = qSeries.copy()
-        for index, row in qSeries.iteritems():
-            timeseries.loc[index] = valueDict[row]    # variable 'row' is an reference index for valueDict
         
-        if timeseries.shape[0] >= 2:
-            daysDelta = timeseries.iloc[1] - timeseries.iloc[0]
+        if self.Timeseries.shape[0] >= 2:
+            daysDelta = self.Timeseries.iloc[1] - self.Timeseries.iloc[0]
             if daysDelta == 1 | daysDelta == 3:     # If weekday
                 self.__annScalar = 252
             if daysDelta == 7:                      # If weekly
@@ -53,17 +47,17 @@ class ReturnSeries(QTimeSeries):
 
 
             # Calculate statistics
-            mean = timeseries.mean()
-            std = timeseries.std()
-            self.__returns = timeseries.tolist()
+            mean = self.Timeseries.mean()
+            std = self.Timeseries.std()
+            self.__returns = self.Timeseries.tolist()
             self.__annMean = mean * self.__annScalar
             self.__annStd = std * self.__annScalar
             self.__sr = math.sqrt(self.__annScalar) * mean / std
 
             # TODO: need to handle the number of periods in a year
             numPeriods = len(self.__returns)
-            self.__compCumReturns = timeseries.cumprod()
-            self.__cumReturns = timeseries.cumsum()
+            self.__compCumReturns = self.Timeseries.cumprod()
+            self.__cumReturns = self.Timeseries.cumsum()
 
 
     def plot(self, type='cr', desc=''):
@@ -138,7 +132,7 @@ class ReturnSeries(QTimeSeries):
 
 
 
-returnSeries = ReturnSeries(['20100101', '20100102', '20100103', '20100104'], [111,222,333,444])
-print returnSeries.annMean
+# returnSeries = ReturnSeries(['20100101', '20100102', '20100103', '20100104'], [111,222,333,444])
+# print returnSeries.annMean
 # print returnSeries.returns
 # print returnSeries.compCumReturns
