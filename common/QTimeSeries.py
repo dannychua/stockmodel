@@ -13,16 +13,16 @@ class QTimeSeries():
             print len(dates)
             print len(values)
             return
-        self.valueDict = {}
+        self.__valueDict = {}
         if len(dates) and type(dates[0]) is str:
             dates = [Str2Date(d) for d in dates]
         for idx, value in enumerate(values):
-            self.valueDict[idx] = value
+            self.__valueDict[idx] = value
         if not len(dates):
-            self.qSeries = pd.Series()
+            self.__qSeries = pd.Series()
         else:
-            self.qSeries = pd.Series(data=xrange(len(values)), index=dates)
-            self.qSeries = self.qSeries.sort_index()
+            self.__qSeries = pd.Series(data=xrange(len(values)), index=dates)
+            self.__qSeries = self.__qSeries.sort_index()
 
 
 # % date is either double in the format of datenum, or char in the
@@ -30,14 +30,14 @@ class QTimeSeries():
 
     def Add(self, date, value):
         date = Str2Date(date)
-        if date not in self.qSeries:
-            loc = len(self.valueDict)
-            self.qSeries[date] = loc
-            self.valueDict[loc] = value
-            self.qSeries = self.qSeries.sort_index()
+        if date not in self.__qSeries:
+            loc = len(self.__valueDict)
+            self.__qSeries[date] = loc
+            self.__valueDict[loc] = value
+            self.__qSeries = self.__qSeries.sort_index()
         else:
-            loc = self.qSeries[date]
-            self.valueDict[loc] = value
+            loc = self.__qSeries[date]
+            self.__valueDict[loc] = value
         return loc
 
 
@@ -47,8 +47,8 @@ class QTimeSeries():
 #         % format of 'yyyymmdd'
     def ValueOn(self, date):
         date = Str2Date(date)
-        if date in self.qSeries:
-            return self.valueDict[self.qSeries[date]]
+        if date in self.__qSeries:
+            return self.__valueDict[self.__qSeries[date]]
         return None
 
 
@@ -58,8 +58,8 @@ class QTimeSeries():
 #         % format of 'yyyymmdd'
     def ValueAsOf(self, date):
         date = Str2Date(date)
-        if len(self.qSeries):
-            return self.valueDict[self.qSeries.asof(date)]
+        if len(self.__qSeries):
+            return self.__valueDict[self.__qSeries.asof(date)]
         return None
 #
 #         % return the value immediately after date
@@ -67,20 +67,20 @@ class QTimeSeries():
 #         % date is either double in the format of datenum, or char in the
 #         % format of 'yyyymmdd'
     def ValueAfter(self, date):
-        results = self.qSeries[self.qSeries.index > date]
+        results = self.__qSeries[self.__qSeries.index > date]
         if len(results):
-            return self.valueDict[results[0]]
+            return self.__valueDict[results[0]]
         return None
 
     def Contains(self, date):
         date = Str2Date(date)
-        if date in self.qSeries:
+        if date in self.__qSeries:
             return True
         return False
 
     def plotTS(self, Title):
-        if len(self.qSeries) and isinstance(self.qSeries[0], (int, long, float, complex)):
-            plt.plot(self.qSeries.index, self.qSeries.values)
+        if len(self.__qSeries) and isinstance(self.__qSeries[0], (int, long, float, complex)):
+            plt.plot(self.__qSeries.index, self.__qSeries.values)
         # function plotTS(obj, Title)
         #     if (~isnumeric(obj.Values{1}))
         #         error('its value is not numeric, so it can not be ploted');
@@ -99,23 +99,24 @@ class QTimeSeries():
 
     def Remove(self, date):
         date = Str2Date(date)
-        self.qSeries = self.qSeries[self.qSeries.index != date]
+        self.__qSeries = self.__qSeries[self.__qSeries.index != date]
 
     @property
     def length(self):
-        return len(self.qSeries)
+        return len(self.__qSeries)
 
     @property
     def Dates(self):
-        return self.qSeries.index
+        return self.__qSeries.index
 
     @property
     def FirstDate(self):
-        return self.qSeries.index[0]
+        return self.__qSeries.index[0]
 
     @property
     def Series(self):
-        return self.qSeries
+        return self.__qSeries, self.__valueDict
+
 
 
 
