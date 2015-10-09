@@ -106,7 +106,7 @@ def FindTradingDay(dt, shift=0):
 
 
 def UnionDistinct(dates1, dates2):
-    return sorted(set(dates1 + dates2))
+    return dates1.union(dates2)
 
 def last_day_of_month(date):
     if date.month == 12:

@@ -33,9 +33,9 @@ class ReturnSeries(QTimeSeries):
 
     def __calc(self):
         """ Calculates various statistics of the portfolio's returns """
-        if self.qseries.shape[0] >= 2:
-
-            daysDelta = self.qseries.iloc[1] - self.qseries.iloc[0]
+        
+        if self.Timeseries.shape[0] >= 2:
+            daysDelta = self.Timeseries.iloc[1] - self.Timeseries.iloc[0]
             if daysDelta == 1 | daysDelta == 3:     # If weekday
                 self.__annScalar = 252
             if daysDelta == 7:                      # If weekly
@@ -47,17 +47,17 @@ class ReturnSeries(QTimeSeries):
 
 
             # Calculate statistics
-            mean = self.qseries.mean()
-            std = self.qseries.std()
-            self.__returns = self.qseries.tolist()
+            mean = self.Timeseries.mean()
+            std = self.Timeseries.std()
+            self.__returns = self.Timeseries.tolist()
             self.__annMean = mean * self.__annScalar
             self.__annStd = std * self.__annScalar
             self.__sr = math.sqrt(self.__annScalar) * mean / std
 
             # TODO: need to handle the number of periods in a year
             numPeriods = len(self.__returns)
-            self.__compCumReturns = self.qseries.cumprod()
-            self.__cumReturns = self.qseries.cumsum()
+            self.__compCumReturns = self.Timeseries.cumprod()
+            self.__cumReturns = self.Timeseries.cumsum()
 
 
     def plot(self, type='cr', desc=''):
@@ -131,7 +131,10 @@ class ReturnSeries(QTimeSeries):
 
 
 
-
-# returnSeries = ReturnSeries(['2010-01-01', '2010-01-02', '2010-01-03', '2010-01-04'], [1,2,3,4])
-# print returnSeries.returns 
-# print returnSeries.compCumReturns
+if __name__ == '__main__':
+    returnSeries = ReturnSeries(['20100101', '20100102', '20100103', '20100104'], [111,222,333,444])
+    print returnSeries.annMean
+    print returnSeries.annStd
+    print returnSeries.sr
+    print returnSeries.returns
+    print returnSeries.compCumReturns

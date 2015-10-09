@@ -21,17 +21,17 @@ class PortfolioProvider:
     #% portfolio_ts is a time series of portfolio
     def __init__(self, name, portfolios, desc=None, closingPx=None):
         self.Name = name
-        self.Portfolios = portfolios
-        self.AvailableDates = portfolios.getDates()
-        self.Desc = desc
-        self.ClosingPx = closingPx
+        self.__Portfolios = portfolios
+        self.__AvailableDates = portfolios.Dates
+        self.__Desc = desc
+        self.__ClosingPx = closingPx
 
         
         # % return the portfolio on date if it exists
         # % otherwise return empty
     def GetPortfolioOn(self, date):
         date = Str2Date(date)
-        return self.Portfolios.ValueOn(date)
+        return self.__Portfolios.ValueOn(date)
 
         # % return the portfolio on dt if it exists
         # % if it doesn't exist, then take the most recent portfolio and don't adjust its weights
@@ -40,7 +40,7 @@ class PortfolioProvider:
 
     def GetPortfolioAsofFixed(self, date, reWeightTo100=0):
         date = Str2Date(date)
-        portfolio = self.Portfolios.ValueAsOf(date)
+        portfolio = self.__Portfolios.ValueAsOf(date)
         if reWeightTo100:
             portfolio.ReWeightTo100()
         return portfolio
@@ -52,7 +52,7 @@ class PortfolioProvider:
         # % if no portfolio exists before dt, return empty
     def GetPortfolioAsof(self, date, reWeightTo100=0):
         date = Str2Date(date)
-        portfolio = self.Portfolios.ValueAsOf(date)
+        portfolio = self.__Portfolios.ValueAsOf(date)
         portfolio.HeldToDate(date, False)
         if reWeightTo100:
             portfolio.ReWeightTo100()
@@ -60,28 +60,36 @@ class PortfolioProvider:
 
         
     def TotalReturnInRange(self, startDate, endDate):
-        if len(self.ClosingPx):
+        if len(self.__ClosingPx):
             ppRet = np.nan #% to be implemented
         else:
-            startValue = self.ClosingPx.ValueAsOf(startDate)
-            endValue = self.ClosingPx.ValueAsOf(endDate)
+            startValue = self.__ClosingPx.ValueAsOf(startDate)
+            endValue = self.__ClosingPx.ValueAsOf(endDate)
             ppRet =100.0*(endValue/startValue - 1.0)
         return ppRet
 
 
     def TotalReturnInRange_Bk(self, startDate, endDate):
-        if len(self.ClosingPx):
+        if len(self.__ClosingPx):
             ppRet = np.nan  #% to be implemented
         else:
-            startValue = self.ClosingPx.ValueAfter(startDate)
-            endValue = self.ClosingPx.ValueAfter(endDate)
+            startValue = self.__ClosingPx.ValueAfter(startDate)
+            endValue = self.__ClosingPx.ValueAfter(endDate)
             ppRet = 100.0*(endValue/startValue - 1.0)
         return ppRet
 
+    @property
+    def AvailableDates(self):
+        return self.__AvailableDates
 
-    def getAvailableDates(self):
-        return self.AvailableDates
+    @property
+    def ClosingPx(self):
+        return self.__ClosingPx
 
-    def getClosingPx(self):
-        return self.ClosingPx
+    @property
+    def Desc(self):
+        return self.__Desc
 
+    @property
+    def Portfolios(self):
+        return self.__Portfolios

@@ -1,77 +1,79 @@
 __author__ = 'xiaodan'
-import time
+from datetime import datetime
 import numpy
 
 def Str2Date(date):
     '''date will be converted as a datetime obj if the date is a string,with the format "yyyymmdd" '''
     if type(date) is str:
-        return time.strptime(date, '%Y%m%d')
+        return datetime.strptime(date, '%Y%m%d')
     return date
 
 def WinsorizedZ(rawscores, Cap = 3.5, Tolerance = 0.1):
     ''' return a winsorized Z scores, where winsorization is robust normalization
-    :param rawscores: an array of raw scores which may include NaN
+    :param rawscores: a ndarray (numpy array) of raw scores which may include NaN
     :param Cap: the maximum Z scores
     :param Tolerance: the iteration converges when the difference of the adjacent iterations is less than Tolerance
     :return: winsorized Z scores
     '''
     n = len(rawscores)
-    avg = numpy.average(rawscores)   ## can it handle NaN?
-    stdev = numpy.std(rawscores)     ## is it simple sample standard deviation? does it handle NaN?
-    pass
+    avg = numpy.nanmean(rawscores)
+    stdev = numpy.nanstd(rawscores)
+    if numpy.isnan(avg) or numpy.isnan(stdev) or numpy.isinf(avg) or numpy.isinf(stdev):
+        return rawscores
 
-        # function zscores = WinsorizedZ(rawscores, cap, tolerance)
-        #     Cap = 3.5;
-        #     Tolerance = 0.1;
-        #     if(nargin>1)
-        #         Cap = cap;
-        #         if(nargin >2)
-        #             Tolerance = tolerance;
-        #         end
-        #     end
-        #
-        #     len = length(rawscores);
-        #     zscores = zeros(len,1);
-        #
-        #     avg = nanmean(rawscores);
-        #     stdev = nanstd(rawscores);
-        #
-        #     if(isnan(avg) || isnan(stdev) || isinf(avg) || isinf(stdev))
-        #         zscores = rawscores;
-        #         return;
-        #     end
-        #
-        #     zscores = (rawscores-avg)/stdev;
-        #
-        #     t = 100;
-        #     while (t > Cap +Tolerance)
-        #         avg = nanmean(zscores);
-        #         stdev = nanstd(zscores);
-        #
-        #         tmpZ = (zscores-avg)/stdev;
-        #
-        #         for i = 1:len
-        #             if(tmpZ(i) > Cap)
-        #                 zscores(i) = (Cap+zscores(i))*0.5;
-        #             elseif (tmpZ(i) < -Cap)
-        #                 zscores(i) = (-Cap+zscores(i))*0.5;
-        #             else
-        #                 zscores(i) = tmpZ(i);
-        #             end
-        #         end
-        #
-        #         max1 = abs(nanmax(zscores));
-        #         min1 = abs(nanmin(zscores));
-        #         if(isnan(max1) || isnan(min1))
-        #             return;
-        #         end
-        #         t = max(max1, min1);
-        #     end
-        #
-        #     avg = nanmean(zscores);
-        #     stdev = nanstd(zscores);
-        #     zscores = (zscores-avg)/stdev;
-        # end
-        #
+    zscores = numpy.zeros(n)
+    for i in range(n):
+        zscores[i] = (rawscores[i]-avg)/stdev
+
+    t = 100
+    while t > Cap + Tolerance:
+        avg = numpy.nanmean(zscores)
+        stdev = numpy.nanstd(zscores)
+
+        for i in range(n):
+            tmpZ = (zscores[i]-avg)/stdev
+            if tmpZ > Cap:
+                zscores[i] = (Cap + zscores[i]) * 0.5
+            elif tmpZ < -Cap:
+                zscores[i] = (-Cap + zscores[i]) * 0.5
+            else:
+                zscores[i] = tmpZ
+
+        max1 = abs(numpy.max(zscores))
+        min1 = abs(numpy.min(zscores))
+        if numpy.isnan(max1) or numpy.isnan(min1):
+            return zscores
+        t = max(max1, min1)
+
+    avg = numpy.nanmean(zscores)
+    stdev = numpy.nanstd(zscores)
+    for i in range(n):
+        zscores[i] = (zscores[i]-avg)/stdev
+    return zscores
 
 
+def WinsorizedZByGroup(rawscores, groups, Cap = 3.5, Tolerance = 0.1):
+    ''' return a winsorized Z scores, where winsorization is robust normalization
+    :param rawscores: an array of raw scores which may include NaN
+    :param groups: a n by 1 array of integers which represent groups
+    :param Cap: the maximum Z scores
+    :param Tolerance: the iteration converges when the difference of the adjacent iterations is less than Tolerance
+    :return: winsorized Z scores
+    '''
+
+    C = numpy.unique(groups)
+    numGroups = len(C)
+    n = len(rawscores)
+    zscores = numpy.zeros(n)
+    MinRequired = 3
+
+    for i in range(numGroups):
+        idx = groups == C[i]
+        subrawscores = rawscores[idx]
+        if len(subrawscores) < MinRequired:
+            print "Warning: Not enough members in one of the groups in WinsorizedZByGroup"
+            zscores[idx] = numpy.nan
+        else:
+            zscores[idx] = WinsorizedZ(subrawscores, Cap, Tolerance)
+
+    return zscores
