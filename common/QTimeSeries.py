@@ -117,6 +117,13 @@ class QTimeSeries():
     def Series(self):
         return self.__qSeries, self.__valueDict
 
-
-
-
+    @property
+    def Timeseries(self):
+        # Create timeseries from qSeries and valueDict
+        # Warning: No error handling. A temp convenience function for Danny until code rewrite
+        # TODO: Exception handling
+        qSeries, valueDict = self.Series
+        timeseries = qSeries.copy()
+        for index, row in qSeries.iteritems():
+            timeseries.loc[index] = valueDict[row]    # variable 'row' is an reference index for valueDict
+        return timeseries
