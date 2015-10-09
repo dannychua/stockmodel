@@ -131,10 +131,10 @@ class ReturnSeries(QTimeSeries):
 
 
 
-
-returnSeries = ReturnSeries(['20100101', '20100102', '20100103', '20100104'], [111,222,333,444])
-print returnSeries.annMean
-print returnSeries.annStd
-print returnSeries.sr
-print returnSeries.returns
-print returnSeries.compCumReturns
+if __name__ == '__main__':
+    returnSeries = ReturnSeries(['20100101', '20100102', '20100103', '20100104'], [111,222,333,444])
+    print returnSeries.annMean
+    print returnSeries.annStd
+    print returnSeries.sr
+    print returnSeries.returns
+    print returnSeries.compCumReturns
