@@ -43,8 +43,12 @@ class TileAnalysis:
 
 			# Find fraction of scores that are np.nan
 			fracNans = np.sum(np.isnan(scoresList)) / float(len(scoresList))
-			if fracNans > 0.5:
-				raise ValueError('Half of stocks have NaN scores')
+			try:
+				if fracNans > 0.5:
+					raise ValueError('Half of stocks have NaN scores')
+			except ValueError as e:
+				print 'Error: ', e
+
 
 			# Initialize lists of stock returns 
 			numStocksInTile = np.floor(len(scoresList) / float(self.__numTiles))
