@@ -7,7 +7,6 @@ import sys
 from datetime import datetime
 import cPickle as pickle
 import common.GlobalConstant as GlobalConstant
-from common.Factor import Factor
 from common.PortfolioProviders import PortfolioProviders
 import common.QDate as QDate
 from common.Factor import Factor
