@@ -14,6 +14,7 @@ class TileAnalysis:
 		if len(dates) and type(dates[0]) is str:
 			self.__dates = [Str2Date(d) for d in dates]
 		self.__univPP = univPP
+		self.__numTiles = numTiles
 
 
 	def run(self, factor=None, bmDemean=False):
@@ -40,7 +41,16 @@ class TileAnalysis:
 				score = factor.getScore(stockIDs, dt, 1, True)
 				scoresList.append(score)
 
-			# Sort scoresList so NaN scores are on top
+			# Find fraction of scores that are np.nan
+			fracNans = np.sum(np.isnan(scoresList)) / float(len(scoresList))
+			if fracNans > 0.5:
+				raise ValueError('Half of stocks have NaN scores')
+
+			# Initialize lists of stock returns 
+			numStocksInTile = np.floor(len(scoresList) / float(self.__numTiles))
+			topTileStkRets = []
+			botTileStkRets = []
+
 			# TODO: Finish up TileAnalysis.Run()
 
 
@@ -49,4 +59,5 @@ class TileAnalysis:
 
 if __name__ == '__main__':
 	tileAnalysis = TileAnalysis(['20130101', '20140101', '20150101'], PortfolioProviders.getA50(), 5)
-	tileAnalysis.run('someFactor', True)
+	BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
+	tileAnalysis.run(BP, True)
