@@ -30,6 +30,10 @@ class PortfolioProvider:
         # % return the portfolio on date if it exists
         # % otherwise return empty
     def GetPortfolioOn(self, date):
+        '''
+        :param date: the date interested, in the format of 'yyyymmdd'
+        :return: the portfolio on date if it exists
+        '''
         date = Str2Date(date)
         return self.__Portfolios.ValueOn(date)
 
@@ -38,19 +42,26 @@ class PortfolioProvider:
         # % if reWeightTo100 is true, re-scale the long side of the portfolio to be 100%
         # % if no portfolio exists before dt, return empty
 
-    def GetPortfolioAsofFixed(self, date, reWeightTo100=0):
+    def GetPortfolioAsofFixed(self, date, reWeightTo100=False):
+        '''
+        :param date: the date interested, in the format of 'yyyymmdd'
+        :param reWeightTo100: if true, re-weight the portfolio to 100%; otherwise, return the portfolio as is
+        :return: the portfolio on dt if it exists; otherwise, return the most recent portfolio without adjusting weights;
+            if no portfolio exists before dt, return None
+        '''
         date = Str2Date(date)
         portfolio = self.__Portfolios.ValueAsOf(date)
         if reWeightTo100:
             portfolio.ReWeightTo100()
         return portfolio
         
-        # % return the portfolio on dt if it exists
-        # % if it doesn't exist, then take the most recent portfolio and carry-over its holdings to date
-        # % weights are adjusted to reflect the stock returns from the AsOfDate to date
-        # % if reWeightTo100 is true, re-scale the long side of the portfolio to be 100%
-        # % if no portfolio exists before dt, return empty
     def GetPortfolioAsof(self, date, reWeightTo100=0):
+        '''
+        :param date: the date interested, in the format of 'yyyymmdd'
+        :param reWeightTo100: if true, re-weight the portfolio to 100%; otherwise, return the portfolio as is
+        :return: the portfolio on dt if it exists; otherwise, return the most recent portfolio with weights adjusted to
+                reflect price movement from the AsOfDate to date. if no portfolio exists before dt, return None
+        '''
         date = Str2Date(date)
         portfolio = self.__Portfolios.ValueAsOf(date)
         portfolio.HeldToDate(date, False)
@@ -60,18 +71,28 @@ class PortfolioProvider:
 
         
     def TotalReturnInRange(self, startDate, endDate):
-        if len(self.__ClosingPx):
-            ppRet = np.nan #% to be implemented
+        '''
+        :param startDate: starting from the closing price on startDate
+        :param endDate: ending with the closing price on endDate
+        :return: the portfolio return during the period
+        '''
+        if self.__ClosingPx is None:
+            ppRet = np.nan # to be implemented, using the underlying portfolio to calculate its return
         else:
             startValue = self.__ClosingPx.ValueAsOf(startDate)
             endValue = self.__ClosingPx.ValueAsOf(endDate)
-            ppRet =100.0*(endValue/startValue - 1.0)
+            ppRet = 100.0*(endValue/startValue - 1.0)
         return ppRet
 
 
     def TotalReturnInRange_Bk(self, startDate, endDate):
-        if len(self.__ClosingPx):
-            ppRet = np.nan  #% to be implemented
+        '''
+        :param startDate: starting from the closing price on the next trading date following startDate
+        :param endDate: ending with the closing price on the next trading date following endDate
+        :return: the portfolio return during the period
+        '''
+        if self.__ClosingPx is None:
+            ppRet = np.nan  #% to be implemented, using the underlying portfolio to calculate its return
         else:
             startValue = self.__ClosingPx.ValueAfter(startDate)
             endValue = self.__ClosingPx.ValueAfter(endDate)

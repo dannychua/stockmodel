@@ -8,8 +8,17 @@ def UnitTests():
     for dt in [dt1,dt2,dt3,dt4]:
         print FindTradingDay(dt)
     dt5 = datetime.datetime(2014,6,30)
-    print MonthBeginningBtw(dt5, dt3)
-    print MonthEndsBtw(dt5, dt3)
+    monBegins = MonthBeginningBtw(dt5, dt3)
+    monEnds = MonthEndsBtw(dt5, dt3)
+    print monBegins
+    print monEnds
+    monBeginsDT = [dt.ctime() for dt in monBegins]
+    print monBeginsDT
+    DT1 = monBeginsDT[0]
+    dt1 = pd.to_datetime(DT1, format('%Y%m%d'))
+    print DT1
+    print dt1
+
 
 if __name__ == '__main__':
     # print GetAllTradingDays()

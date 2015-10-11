@@ -12,25 +12,14 @@ import common.QDate as QDate
 from common.Factor import Factor
 from common.Factorlib.BPCalc import BPCalc
 
-
-
-def buildFactorCache():
-    """ Build factor score cache for all factors """
-
-    # Avoid error `maximum recursion depth exceeded`
-    sys.setrecursionlimit(1000)
-
-    # Retrieve all PortfolioProviders
-    a50PP, zz800PP = getAllPP()
-
-
-
+# if the database is on local pc, it may be faster to load it from db than from files  by xxia on 10/10/2015
 def getAllPP():
     """ Retrieve all PortfolioProviders 
         Hits flatfile cache first, before querying database
     """
     # Construct path to cache file
-    universesPath = os.path.join(GlobalConstant.DATA_DIR, 'Universes')
+    #universesPath = os.path.join(GlobalConstant.DATA_DIR, 'Universes')
+    universesPath = GlobalConstant.DATA_Universes_DIR
     a50ppCachePath = os.path.join(universesPath, 'a50PP.dat')
     zz800ppCachePath = os.path.join(universesPath, 'zz800PP.dat')
 
@@ -83,13 +72,11 @@ def getAllPPFromDb():
     return (a50PP, zz800PP)
 
 
-# # Build Factor cache
-buildFactorCache()
-
 # Setup datetimes
 WeekDts = QDate.WeekEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
 MonthDts = QDate.MonthEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
 CacheDts = QDate.UnionDistinct(WeekDts, MonthDts)
+
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -97,12 +84,14 @@ CacheDts = QDate.UnionDistinct(WeekDts, MonthDts)
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # Setup PortfolioProviders
-a50PP, zz800PP = getAllPP()
-BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
-zBP = BP.Z(False, zz800PP)
-zBP_SN = BP.Z(True, zz800PP)
+a50PP, zz800PP = getAllPPFromDb() #getAllPP()
+BP = Factor('BP', 'Book/Price', BPCalc, a50PP)
+#BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
+# zBP = BP.Z(False, zz800PP)
+# zBP_SN = BP.Z(True, zz800PP)
 
 # Calculate Scores and Save
-BP.CalcScoresAndSave(CacheDts, zz800PP)
-zBP.CalcScoresAndSave(CacheDts, zz800PP)
-zBP_SN.CalcScoresAndSave(CacheDts, zz800PP)
+BP.CalcScoresAndSave(CacheDts, a50PP)
+#BP.CalcScoresAndSave(CacheDts, zz800PP)
+# zBP.CalcScoresAndSave(CacheDts, zz800PP)
+# zBP_SN.CalcScoresAndSave(CacheDts, zz800PP)

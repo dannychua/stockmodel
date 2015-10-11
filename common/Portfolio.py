@@ -13,15 +13,19 @@ import sys
 # % it is a handle class
 
 class Portfolio:
-    #% holdings could be empty
-    #% dim is the length of the portfolio array, used to initiate an array of portfolios
-    #% to be implemented: it'd better remove 'dim' as a parameter
     def __init__(self, date, holdings=[]):
+        '''
+                Portfolio is a set of holdings on a date when it is evaluated
+                 It can be long-only or long-short or any weights.
+        :param date: the data of the portfolio
+        :param holdings: an array of holding, which could be empty
+        :return: a Portfolio instance
+        '''
         self.Date = date
         if len(holdings):
             holding_new = holdings
             if type(holdings[0]) is dict:
-                holding_new = [Holding(holding) for holding in holdings]
+                holding_new = [Holding(holding) for holding in holdings]  ## don't understand ???? by xxia
             self.__Holdings = holding_new
 
     def AddHolding(self, holding):
@@ -96,6 +100,12 @@ class Portfolio:
 
     def GetStockIDs(self):
         return [h.StockID for h in self.__Holdings]
+
+    def WeightOfStock(self, stockID):
+        for h in self.__Holdings:
+            if h.StockID == stockID:
+                return h.Weight
+        return 0    # stockId is not found
 
     @property
     def Holdings(self):

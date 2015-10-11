@@ -10,19 +10,20 @@ from Stock import Stock
 from datetime import datetime
 from QTimeSeries import QTimeSeries
 import GlobalConstant
+import pandas as pd
 
 
 class Factor:
-    def __init__(self, name, desc, delegator, univPP):
+    def __init__(self, name, desc, delegator, univPP = None):
         self.Name = name
         self.Description = desc
         self.Calculator = delegator
         self.ScoreCache = None
         self.ZScoreCache = QTimeSeries()
         self.StkScoreMap = {}
-        if not os.path.exists(GlobalConstant.DATA_DIR+'/FactorScores/'):
-            os.mkdir(GlobalConstant.DATA_DIR+'/FactorScores/')
-        self.cacheFile = GlobalConstant.DATA_DIR+'/FactorScores/' + name+'.mat'
+        if not os.path.exists(GlobalConstant.DATA_FactorScores_DIR):
+            os.mkdir(GlobalConstant.DATA_FactorScores_DIR)
+        self.cacheFile = os.path.join(GlobalConstant.DATA_FactorScores_DIR, name+'.dat')
         self.UnivPP = univPP
         
         # get the score from the cache if it is available
@@ -45,8 +46,12 @@ class Factor:
                 factorScore = np.nan
             else:
                 factorScore = map[stockID]
-        elif os.exits(self.cacheFile):  # if cache is not available, but cache file exists, load cache from the file
-            self.ScoreCache = cPickle.load(self.cacheFile)
+        elif os.path.exists(self.cacheFile):  # if cache is not available, but cache file exists, load cache from the file
+            with open(self.cacheFile, 'rb') as fin:
+                cacheObj = cPickle.load(fin)
+                dates = [pd.to_datetime(dt, format('%Y%m%d')) for dt in cacheObj[0]]
+                self.ScoreCache = QTimeSeries(dates, cacheObj[1])
+
             if isAsOf:
                 map = self.ScoreCache.ValueAsOf(date)
             else:
@@ -66,19 +71,21 @@ class Factor:
     def CalcScoresAndSave(self, dates, univPP):
         scoreMaps = []
         for idx, dt in enumerate(dates):
-            port = univPP.GetPortfolioAsofFixed(dt)
+            pf = univPP.GetPortfolioAsofFixed(dt)
+            numHoldings = len(pf.Holdings)
             ids = []
-            scores = []
-            for holding in port.Holdings:
-                score = self.Calculator(holding.StockID, dt.strftime('%Y%m%d'))  #%% dt doesn't need to be a trading date? strange
-                #%disp([j,size(score)])
-                scores.append(score)
-                ids.append(holding.StockID)
+            scores = [0]*numHoldings
+            for i in range(numHoldings):
+                score = self.Calculator(pf.Holdings[i].StockID, dt.strftime('%Y%m%d'))  #%% dt doesn't need to be a trading date? strange
+                scores[i] = score
+                ids.append(pf.Holdings[i].StockID)
             scoreMap = dict(zip(ids, scores))
             scoreMaps.append(scoreMap)
         self.ScoreCache = QTimeSeries(dates=dates, values=scoreMaps)
-        with open(self.cacheFile, 'w') as fout:
-            cPickle.dump(self.ScoreCache, fout)
+        datesDT = [dt.ctime() for dt in dates]
+        cacheObj = [datesDT, scoreMaps]  # cache a list instead of QTimeSeries in order to use cPickle which supports Python object only
+        with open(self.cacheFile, 'wb') as fout:
+            cPickle.dump(cacheObj, fout)
 
 #
 #         % transform a raw factor to a Z factor

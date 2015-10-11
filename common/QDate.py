@@ -8,29 +8,64 @@ from pandas.tslib import Timestamp
 # % handle a holding and the related logic
 # % date: 9/5/2015
 
+#exchange trading dates
+__TradingDates = None
 def GetAllTradingDays():
-    sql = '''select TRADE_DAYS from WindDB.dbo.ASHARECALENDAR where s_info_exchmarket = 'SSE' and TRADE_DAYS>'%s' order by TRADE_DAYS''' % GlobalConstant.TestStartDate
-    curs = GlobalConstant.DBCONN_WIND.cursor()
-    curs.execute(sql)
-    dates = pd.to_datetime([row[0] for row in curs.fetchall()], format='%Y%m%d')
-    # for row in curs.fetchall():
-    #     days.append(datetime.strptime(row[0], '%Y%m%d'))
-    curs.close()
-    #
-    # dates_df.columns = [x[0] for x in curs.description]
-    # #dates = datenum(char(curs.Data),'yyyymmdd');
-    #
-    # # % Shanghai exchange had different trading dates from Shenzhen
-    # # % in the early period. To avoid issues, we set start date to be the first date after 1998-01-01
-    # #startDate = datenum('19980101','yyyymmdd');
-    start_date = datetime.datetime(1998, 1, 1)
-    return dates[dates > start_date]
+    global __TradingDates
+    if __TradingDates is None:
+        sql = '''select TRADE_DAYS from WindDB.dbo.ASHARECALENDAR where s_info_exchmarket = 'SSE' and TRADE_DAYS>'%s' order by TRADE_DAYS''' % GlobalConstant.TestStartDate
+        curs = GlobalConstant.DBCONN_WIND.cursor()
+        curs.execute(sql)
+        dates = pd.to_datetime([row[0] for row in curs.fetchall()], format='%Y%m%d')
+        # for row in curs.fetchall():
+        #     days.append(datetime.strptime(row[0], '%Y%m%d'))
+        curs.close()
+        #
+        # dates_df.columns = [x[0] for x in curs.description]
+        # #dates = datenum(char(curs.Data),'yyyymmdd');
+        #
+        # # % Shanghai exchange had different trading dates from Shenzhen
+        # # % in the early period. To avoid issues, we set start date to be the first date after 1998-01-01
+        # #startDate = datenum('19980101','yyyymmdd');
+        start_date = datetime.datetime(1998, 1, 1)
+        __TradingDates = dates[dates > start_date]
+    return __TradingDates
+
 
 #% find all trading trades between startDate and endDate
 # % including startDate and endDate if they are trading days
 #        % startDate and endDate are either datenum or 'yyyymmdd'
 def TradingDaysBTW(startDate, endDate):
-    return GlobalConstant.TradingDates[(GlobalConstant.TradingDates >= startDate) & (GlobalConstant.TradingDates <= endDate)]
+    global __TradingDates
+    if __TradingDates is None:
+        __TradingDates = GetAllTradingDays()
+    return __TradingDates[(__TradingDates >= startDate) & (__TradingDates <= endDate)]
+
+
+# % return the trading day which is equal to dt + shift if dt is a trading date,
+# % otherwise equal to (dt+0) + shift, where (dt+0) is the trading day prior to dt?
+# % and shift is the number of trading days
+# % shift is an integer, and can be 0, positive or negative;
+def FindTradingDay(dt, shift=0):
+    global __TradingDates
+    if __TradingDates is None:
+        __TradingDates = GetAllTradingDays()
+    dates = __TradingDates
+    size = len(dates)
+    if dt > Timestamp.max:
+        dt = Timestamp.max
+    priors = dates[dates <= dt]
+    within = True if len(priors) else False
+    if within:
+        loc = dates.get_loc(priors[-1])
+        if 0 <loc + shift < size:
+            return dates[loc+shift]
+    else:
+        delta = dates[0] - dt
+        if delta.days <= shift < size:
+            return dates[shift]
+    return None
+
 
 # % find all month beginnings between startDate and endDate
 # % including startDate and endDate if they are month beginnings
@@ -81,38 +116,13 @@ def AddDays(date, shift):
     return date + datetime.timedelta(days=shift)
 
 
-
-
-# % return the trading day which is equal to dt + shift if dt is a trading date,
-# % otherwise equal to (dt+0) + shift, where (dt+0) is the trading day prior to dt?
-# % and shift is the number of trading days
-# % shift is an integer, and can be 0, positive or negative;
-def FindTradingDay(dt, shift=0):
-    dates = GlobalConstant.TradingDates
-    size = len(dates)
-    if dt > Timestamp.max:
-        dt = Timestamp.max
-    priors = dates[dates <= dt]
-    within = True if len(priors) else False
-    if within:
-        loc = dates.get_loc(priors[-1])
-        if 0 <loc + shift < size:
-            return dates[loc+shift]
-    else:
-        delta = dates[0] - dt
-        if delta.days <= shift < size:
-            return dates[shift]
-    return None
-
-
 def UnionDistinct(dates1, dates2):
-    return dates1.union(dates2)
+    return dates1.union(dates2)    ### does it remove the duplicates?? how about sorting ascending?
 
 def last_day_of_month(date):
     if date.month == 12:
         return date.replace(day=31)
     return date.replace(month=date.month+1, day=1) - datetime.timedelta(days=1)
-
 
 
 

@@ -7,6 +7,7 @@
 # %%
 # % it is a handle class
 import pandas as pd
+from pandas import Timestamp
 import GlobalConstant
 from QTimeSeries import QTimeSeries
 from SectorIndustry import SectorIndustry
@@ -39,14 +40,17 @@ class Stock:
 
     def getDatafromDB(self):
         sqlString = '''select TRADE_DT, S_DQ_CLOSE, S_DQ_VOLUME, S_DQ_AMOUNT*1000 as S_DQ_AMOUNT, S_DQ_ADJCLOSE, S_DQ_AVGPRICE*S_DQ_ADJFACTOR  as AdjVWAP
-                     from WindDB.dbo.ASHAREEODPRICES where S_INFO_WINDCODE = %s and S_DQ_TRADESTATUS != 'ͣ��'and TRADE_DT> %s order by trade_dt'''
+                     from WindDB.dbo.ASHAREEODPRICES where S_INFO_WINDCODE = '%s' and S_DQ_TRADESTATUS != '停牌'and TRADE_DT> '%s' order by trade_dt'''
         sqlString = sqlString % (str(self.WindID), str(GlobalConstant.TestStartDate.strftime('%Y%m%d')))
-        curs = GlobalConstant.DBCONN_WIND.cursor()
-        curs.execute(sqlString)
-        rows = curs.fetchall()
-        curs.close()
-        self.StockDataFrame = pd.DataFrame(rows)
+        # curs = GlobalConstant.DBCONN_WIND.cursor()
+        # curs.execute(sqlString)
+        # rows = curs.fetchall()
+        # curs.close()
+        # self.StockDataFrame = pd.DataFrame(rows)
+        self.StockDataFrame = pd.read_sql(sqlString, GlobalConstant.DBCONN_WIND)
+
         dates = self.StockDataFrame.TRADE_DT.tolist()
+        dates = pd.to_datetime(dates, format('%Y%m%d'))
         self.ClosingPx = QTimeSeries(dates, self.StockDataFrame.S_DQ_CLOSE.tolist())
         self.VolumeShares = QTimeSeries(dates, self.StockDataFrame.S_DQ_VOLUME.tolist())
         self.VolumeValue = QTimeSeries(dates, self.StockDataFrame.S_DQ_AMOUNT.tolist())
@@ -72,7 +76,7 @@ class Stock:
             self.getDatafromDB()
         return self.VolumeValue
 
-    def geAdjClosingPx(self):
+    def getAdjClosingPx(self):
         if not self.AdjClosingPx:
             self.getDatafromDB()
         return self.AdjClosingPx
@@ -84,22 +88,19 @@ class Stock:
 
     def getFloatingShares(self):
         if not self.FloatingShares:
-            sqlString = '''select TRADE_DT, FLOAT_A_SHR_TODAY*10000 as FloatingShares from WindDB.dbo.ASHAREEODDERIVATIVEINDICATOR  where S_INFO_WINDCODE = %s and TRADE_DT> %s  order by trade_dt'''
-            curs = GlobalConstant.DBCONN_WIND.cursor()
-            curs.execute(
-                sqlString % (self.WindID, GlobalConstant.TestStartDate.strftime('%Y%m%d')))  # convert to string first
-        rows = curs.fetchall()
-        curs.close()
-        df = pd.DataFrame(rows)
-        self.FloatingShares = QTimeSeries(df.TRADE_DT.tolist(), df.FloatingShares.tolist())  # % value is cell
+            sqlString = '''select TRADE_DT, FLOAT_A_SHR_TODAY*10000 as FloatingShares from WindDB.dbo.ASHAREEODDERIVATIVEINDICATOR
+            where S_INFO_WINDCODE = '%s' and TRADE_DT> '%s'  order by trade_dt '''
+            sqlString = sqlString % (self.WindID, GlobalConstant.TestStartDate.strftime('%Y%m%d'))  # convert to string first
+            df = pd.read_sql(sqlString, GlobalConstant.DBCONN_WIND)
+            self.FloatingShares = QTimeSeries(df.TRADE_DT.tolist(), df.FloatingShares.tolist())  # % value is cell
         return self.FloatingShares
 
     def PriceOnDate(self, date):
-        return self.ClosingPx.ValueOn(date)
+        return self.getClosingPx().ValueOn(date)
 
     def FloatMarketCap(self, date):
         try:
-            mktCap = self.ClosingPx.ValueAsOf(date) * self.FloatingShares.ValueAsOf(date)
+            mktCap = self.getClosingPx().ValueAsOf(date) * self.getFloatingShares().ValueAsOf(date)
             return mktCap
         except:
             return None
@@ -113,11 +114,11 @@ class Stock:
     def TotalReturnInRange(self, startDate, endDate):
         startDate = Str2Date(startDate)
         endDate = Str2Date(endDate)
-        firstDt = self.AdjClosingPx.FirstDate()
+        firstDt = self.getAdjClosingPx().FirstDate
         if (startDate < firstDt):
             return None
-        startValue = self.AdjClosingPx.ValueAsOf(startDate)
-        endValue = self.AdjClosingPx.ValueAsOf(endDate)
+        startValue = self.getAdjClosingPx().ValueAsOf(startDate)
+        endValue = self.getAdjClosingPx().ValueAsOf(endDate)
         return 100.0 * (endValue / startValue - 1.0)
 
     # % calculate total returns from startDate to endDate using Adjusted VWAP with asof semantics
@@ -134,8 +135,8 @@ class Stock:
         if startDate < firstDt:
             return None
 
-        startValue = self.AdjVWAP.ValueAsOf(startDate)
-        endValue = self.AdjVAWP.ValueAsOf(endDate)
+        startValue = self.getAdjVWAP().ValueAsOf(startDate)
+        endValue = self.getAdjVAWP().ValueAsOf(endDate)
         return 100.0 * (endValue / startValue - 1.0)
 
 
@@ -158,7 +159,7 @@ class Stock:
     def totalReturnInRange_Bk(self, startDate, endDate):
         startDate = Str2Date(startDate)
         endDate = Str2Date(endDate)
-        firstDt = self.AdjClosingPx.FirstDate()
+        firstDt = self.getAdjClosingPx().FirstDate()
         if startDate < firstDt:
             return None
 
@@ -166,8 +167,8 @@ class Stock:
         # %caller knows how far off the return date range is from the
         # %required data range
         # % to be implemented: ValueAfter return the date as well
-        startValue = self.AdjVWAP.ValueAfter(startDate)
-        endValue = self.AdjVWAP.ValueAfter(endDate)
+        startValue = self.getAdjVWAP().ValueAfter(startDate)
+        endValue = self.getAdjVWAP().ValueAfter(endDate)
         return 100.0 * (endValue / startValue - 1.0)
 
         # % return its WIND industry code as of date
@@ -195,17 +196,22 @@ class Stock:
 
     # % this is the only way to initiate a stock, which is a time
     # % consuming operation, so we just do once for each stock
+    __STOCKMASTERMAP = {}
     @staticmethod
     def ByWindID(windID):
-        global STOCKMASTERMAP
-        if windID in STOCKMASTERMAP:
-            stock = STOCKMASTERMAP[windID]
+        if windID in Stock.__STOCKMASTERMAP:
+            stock = Stock.__STOCKMASTERMAP[windID]
         else:
             # % initiate stock properties from database
-            sqlStr1 = 'select S_INFO_CODE ''Ticker'', S_INFO_NAME ''ShortName'', S_INFO_COMPNAME ''Name'''', S_INFO_EXCHMARKET ''Exchange'', S_INFO_LISTBOARD ''ListBoard'', S_INFO_LISTDATE ''ListDate''''from WINDDB.DBO.ASHAREDESCRIPTION''where S_INFO_WINDCODE=%s'
+            sqlStr1 = """select S_INFO_CODE Ticker, S_INFO_NAME ShortName, S_INFO_COMPNAME Name,
+            S_INFO_EXCHMARKET Exchange, S_INFO_LISTBOARD ListBoard, S_INFO_LISTDATE ListDate
+            from WINDDB.DBO.ASHAREDESCRIPTION where S_INFO_WINDCODE='%s'
+            """ % windID
             curs = GlobalConstant.DBCONN_WIND.cursor()
-            curs.execute(sqlStr1 % windID)
+            curs.execute(sqlStr1)
             row = curs.fetchone()
-            stock = Stock(windID, row[1], row[2], row[3], row[4], row[5], row[6])
+            stock = Stock(windID, row[0], row[1], row[2], row[3], row[4], row[5])
             curs.close()
-            STOCKMASTERMAP[windID] = stock
+            Stock.__STOCKMASTERMAP[windID] = stock
+
+        return stock
