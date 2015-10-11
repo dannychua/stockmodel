@@ -69,7 +69,6 @@ class PortfolioProvider:
             portfolio.ReWeightTo100()
         return portfolio
 
-        
     def TotalReturnInRange(self, startDate, endDate):
         '''
         :param startDate: starting from the closing price on startDate
@@ -114,3 +113,19 @@ class PortfolioProvider:
     @property
     def Portfolios(self):
         return self.__Portfolios
+
+    @staticmethod
+    def GetEqualWeightedPP(self):
+        '''
+        :return: equal weighted portfolio provider
+        to be implemented
+        '''
+        pass
+
+    @staticmethod
+    def GetCapWeightedPP(self):
+        '''
+        :return: cap weighted portfolio provider
+        to be implemented
+        '''
+        pass

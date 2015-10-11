@@ -23,12 +23,12 @@ class Stock:
         self.Exchange = exchange  # exchange
         self.ListBoard = listBoard  # the list board
         self.ListDate = listDate  # the list date
-        self.AdjClosingPx = None  # adjusted closing prices
-        self.AdjVWAP = None  # adjusted VWAP
-        self.ClosingPx = None  # closing prices
-        self.VolumeShares = None  # trading volume in shares
-        self.VolumeValue = None  # trading volume in thousands of RMB
-        self.FloatingShares = None  # floating shares
+        self.__AdjClosingPx = None  # adjusted closing prices
+        self.__AdjVWAP = None  # adjusted VWAP
+        self.__ClosingPx = None  # closing prices
+        self.__VolumeShares = None  # trading volume in shares
+        self.__VolumeValue = None  # trading volume in thousands of RMB
+        self.__FloatingShares = None  # floating shares
 
 
         # % ======= to be implemented in the future
@@ -51,56 +51,59 @@ class Stock:
 
         dates = self.StockDataFrame.TRADE_DT.tolist()
         dates = pd.to_datetime(dates, format('%Y%m%d'))
-        self.ClosingPx = QTimeSeries(dates, self.StockDataFrame.S_DQ_CLOSE.tolist())
-        self.VolumeShares = QTimeSeries(dates, self.StockDataFrame.S_DQ_VOLUME.tolist())
-        self.VolumeValue = QTimeSeries(dates, self.StockDataFrame.S_DQ_AMOUNT.tolist())
-        self.AdjClosingPx = QTimeSeries(dates, self.StockDataFrame.S_DQ_ADJCLOSE.tolist())
-        self.AdjVWAP = QTimeSeries(dates, self.StockDataFrame.AdjVWAP.tolist())
+        self.__ClosingPx = QTimeSeries(dates, self.StockDataFrame.S_DQ_CLOSE.tolist())
+        self.__VolumeShares = QTimeSeries(dates, self.StockDataFrame.S_DQ_VOLUME.tolist())
+        self.__VolumeValue = QTimeSeries(dates, self.StockDataFrame.S_DQ_AMOUNT.tolist())
+        self.__AdjClosingPx = QTimeSeries(dates, self.StockDataFrame.S_DQ_ADJCLOSE.tolist())
+        self.__AdjVWAP = QTimeSeries(dates, self.StockDataFrame.AdjVWAP.tolist())
         self.StockDataFrame.set_index('TRADE_DT')
 
-    def getWindID(self):
-        return self.WindID
-
-    def getClosingPx(self):
-        if not self.ClosingPx:
+    @property
+    def ClosingPx(self):
+        if not self.__ClosingPx:
             self.getDatafromDB()
-        return self.ClosingPx
+        return self.__ClosingPx
 
-    def getVolumeShares(self):
-        if not self.VolumeShares:
+    @property
+    def VolumeShares(self):
+        if not self.__VolumeShares:
             self.getDatafromDB()
-        return self.VolumeShares
+        return self.__VolumeShares
 
-    def getVolumeValue(self):
-        if not self.VolumeValue:
+    @property
+    def VolumeValue(self):
+        if not self.__VolumeValue:
             self.getDatafromDB()
-        return self.VolumeValue
+        return self.__VolumeValue
 
-    def getAdjClosingPx(self):
-        if not self.AdjClosingPx:
+    @property
+    def AdjClosingPx(self):
+        if not self.__AdjClosingPx:
             self.getDatafromDB()
-        return self.AdjClosingPx
+        return self.__AdjClosingPx
 
-    def getAdjVWAP(self):
-        if not self.AdjVWAP:
+    @property
+    def AdjVWAP(self):
+        if not self.__AdjVWAP:
             self.getDatafromDB()
-        return self.AdjVWAP
+        return self.__AdjVWAP
 
-    def getFloatingShares(self):
-        if not self.FloatingShares:
+    @property
+    def FloatingShares(self):
+        if not self.__FloatingShares:
             sqlString = '''select TRADE_DT, FLOAT_A_SHR_TODAY*10000 as FloatingShares from WindDB.dbo.ASHAREEODDERIVATIVEINDICATOR
             where S_INFO_WINDCODE = '%s' and TRADE_DT> '%s'  order by trade_dt '''
             sqlString = sqlString % (self.WindID, GlobalConstant.TestStartDate.strftime('%Y%m%d'))  # convert to string first
             df = pd.read_sql(sqlString, GlobalConstant.DBCONN_WIND)
-            self.FloatingShares = QTimeSeries(df.TRADE_DT.tolist(), df.FloatingShares.tolist())  # % value is cell
-        return self.FloatingShares
+            self.__FloatingShares = QTimeSeries(df.TRADE_DT.tolist(), df.FloatingShares.tolist())  # % value is cell
+        return self.__FloatingShares
 
     def PriceOnDate(self, date):
-        return self.getClosingPx().ValueOn(date)
+        return self.ClosingPx.ValueOn(date)
 
     def FloatMarketCap(self, date):
         try:
-            mktCap = self.getClosingPx().ValueAsOf(date) * self.getFloatingShares().ValueAsOf(date)
+            mktCap = self.ClosingPx.ValueAsOf(date) * self.FloatingShares.ValueAsOf(date)
             return mktCap
         except:
             return None
@@ -114,11 +117,11 @@ class Stock:
     def TotalReturnInRange(self, startDate, endDate):
         startDate = Str2Date(startDate)
         endDate = Str2Date(endDate)
-        firstDt = self.getAdjClosingPx().FirstDate
+        firstDt = self.ClosingPx.FirstDate
         if (startDate < firstDt):
             return None
-        startValue = self.getAdjClosingPx().ValueAsOf(startDate)
-        endValue = self.getAdjClosingPx().ValueAsOf(endDate)
+        startValue = self.ClosingPx.ValueAsOf(startDate)
+        endValue = self.ClosingPx.ValueAsOf(endDate)
         return 100.0 * (endValue / startValue - 1.0)
 
     # % calculate total returns from startDate to endDate using Adjusted VWAP with asof semantics
@@ -131,12 +134,12 @@ class Stock:
         startDate = Str2Date(startDate)
         endDate = Str2Date(endDate)
 
-        firstDt = self.AdjVWAP.FirstDate()
+        firstDt = self.AdjVWAP.FirstDate
         if startDate < firstDt:
             return None
 
-        startValue = self.getAdjVWAP().ValueAsOf(startDate)
-        endValue = self.getAdjVAWP().ValueAsOf(endDate)
+        startValue = self.AdjVWAP.ValueAsOf(startDate)
+        endValue = self.AdjVWAP.ValueAsOf(endDate)
         return 100.0 * (endValue / startValue - 1.0)
 
 
@@ -159,7 +162,7 @@ class Stock:
     def totalReturnInRange_Bk(self, startDate, endDate):
         startDate = Str2Date(startDate)
         endDate = Str2Date(endDate)
-        firstDt = self.getAdjClosingPx().FirstDate()
+        firstDt = self.AdjClosingPx.FirstDate()
         if startDate < firstDt:
             return None
 
@@ -167,8 +170,8 @@ class Stock:
         # %caller knows how far off the return date range is from the
         # %required data range
         # % to be implemented: ValueAfter return the date as well
-        startValue = self.getAdjVWAP().ValueAfter(startDate)
-        endValue = self.getAdjVWAP().ValueAfter(endDate)
+        startValue = self.AdjVWAP.ValueAfter(startDate)
+        endValue = self.AdjVWAP.ValueAfter(endDate)
         return 100.0 * (endValue / startValue - 1.0)
 
         # % return its WIND industry code as of date

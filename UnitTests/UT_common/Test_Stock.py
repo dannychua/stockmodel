@@ -16,6 +16,9 @@ def test_CalcStockReturns():
     mktCap1 = stk.FloatMarketCap('20150112')
     mktCap2 = stk.FloatMarketCap('20140103')
 
+    print stk.WindID
+    print stk.Ticker
+    print stk.Name
     print ret1
     print ret2
     print ret3
