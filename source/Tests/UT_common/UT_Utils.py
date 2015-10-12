@@ -1,6 +1,5 @@
 __author__ = 'xiaofeng'
-import numpy
-from common.Utils import *
+from source.common.Utils import *
 
 def UnitTests():
     a = numpy.random.normal(2, 5, 100)

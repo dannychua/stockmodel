@@ -1,8 +1,10 @@
 __author__ = 'xiaofeng'
 from nose.tools import assert_equal
+
 from common.Factor import *
 from common.Factorlib.BPCalc import *
-from common.Utils import *
+from source.common.Utils import *
+
 
 def test_GetScore():
     BP = Factor('BP','Book/Price',BPCalc)

@@ -1,9 +1,12 @@
 __author__ = 'xiaodan'
-import GlobalConstant
+import datetime
+
 import pandas as pd
 from pandas.tseries.offsets import *
-import datetime
 from pandas.tslib import Timestamp
+
+import GlobalConstant
+
 # %% header
 # % handle a holding and the related logic
 # % date: 9/5/2015

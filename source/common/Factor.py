@@ -4,13 +4,14 @@
 import sys
 import os
 import cPickle
+
 import numpy as np
+import pandas as pd
+
 import Utils
 from Stock import Stock
-from datetime import datetime
 from QTimeSeries import QTimeSeries
 import GlobalConstant
-import pandas as pd
 
 
 class Factor:
@@ -81,6 +82,7 @@ class Factor:
                 ids.append(pf.Holdings[i].StockID)
             scoreMap = dict(zip(ids, scores))
             scoreMaps.append(scoreMap)
+
         self.ScoreCache = QTimeSeries(dates=dates, values=scoreMaps)
         datesDT = [dt.ctime() for dt in dates]
         cacheObj = [datesDT, scoreMaps]  # cache a list instead of QTimeSeries in order to use cPickle which supports Python object only

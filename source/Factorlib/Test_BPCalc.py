@@ -1,7 +1,5 @@
 import numpy as np
 from nose.tools import assert_almost_equal
-from common.Factorlib.BPCalc import *
-
 
 
 def test_BPCalc():

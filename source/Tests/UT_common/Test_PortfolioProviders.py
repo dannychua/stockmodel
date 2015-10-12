@@ -1,5 +1,6 @@
 from nose.tools import assert_equal
-from common.PortfolioProviders import PortfolioProviders
+
+from source.common import PortfolioProviders
 
 
 def test_getClosingPx():
