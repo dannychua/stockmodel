@@ -6,11 +6,11 @@ import os
 from datetime import datetime
 import cPickle as pickle
 
-import source.common.GlobalConstant as GlobalConstant
-from source.common.PortfolioProviders import PortfolioProviders
-import source.common.QDate as QDate
-from source.common.Factor import Factor
-from source.common.Factorlib.BPCalc import BPCalc
+import common.GlobalConstant as GlobalConstant
+from common.PortfolioProviders import PortfolioProviders
+import common.QDate as QDate
+from common.Factor import Factor
+from common.Factorlib.BPCalc import BPCalc
 
 
 # if the database is on local pc, it may be faster to load it from db than from files  by xxia on 10/10/2015
