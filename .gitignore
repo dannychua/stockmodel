@@ -57,3 +57,5 @@ common/local_env.py
 # Ignore cache files
 *.dat
 data/
+source/common/local_env.py
+*.pdf
