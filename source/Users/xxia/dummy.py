@@ -1,10 +1,8 @@
-import numpy
-from common.Factor import *
-from common.Factorlib.BPCalc import *
-from common.Utils import *
-from common.TileAnalysis import TileAnalysis
-import common.QDate as QDate
-from common.PortfolioProviders import PortfolioProviders
+from source.common.Factor import *
+from source.common.Utils import *
+from source.common import TileAnalysis
+import source.common.QDate as QDate
+from source.common import PortfolioProviders
 
 WeekDts = QDate.WeekEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
 MonthDts = QDate.MonthEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )

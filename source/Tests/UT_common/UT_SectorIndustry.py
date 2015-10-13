@@ -1,5 +1,3 @@
-from common.SectorIndustry import *
-
 def UnitTests():
     sectorInd = SectorIndustry();
     # 1st time access,if no data file exists, run database query

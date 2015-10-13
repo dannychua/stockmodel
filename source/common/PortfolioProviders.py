@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import pandas as pd
+
 import GlobalConstant
 from QTimeSeries import QTimeSeries
 from Portfolio import Portfolio
 from PortfolioProvider import PortfolioProvider
-import pandas as pd
+
 
 class PortfolioProviders():
     """Generates pre-defined portfolio providers.

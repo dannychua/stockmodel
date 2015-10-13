@@ -1,6 +1,5 @@
 __author__ = 'xiaofeng'
-from nose.tools import assert_equal
-from common.Stock import *
+
 
 # more test cases needed to cover all the biz logic
 def test_CalcStockReturns():

@@ -1,6 +1,5 @@
 __author__ = 'xiaodan'
 from datetime import datetime
-from local_env import DBCONN_WIND
 from local_env import *
 
 # %% header

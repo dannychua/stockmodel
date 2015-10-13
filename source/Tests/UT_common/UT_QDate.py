@@ -1,4 +1,4 @@
-from common.QDate import *
+from source.common.QDate import *
 
 def UnitTests():
     dt1 = datetime.datetime(1990,1,1)

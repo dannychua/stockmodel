@@ -3,14 +3,15 @@ Build factor score cache for all factors
 """
 
 import os
-import sys
 from datetime import datetime
 import cPickle as pickle
+
 import common.GlobalConstant as GlobalConstant
 from common.PortfolioProviders import PortfolioProviders
 import common.QDate as QDate
 from common.Factor import Factor
 from common.Factorlib.BPCalc import BPCalc
+
 
 # if the database is on local pc, it may be faster to load it from db than from files  by xxia on 10/10/2015
 def getAllPP():
@@ -85,13 +86,13 @@ CacheDts = QDate.UnionDistinct(WeekDts, MonthDts)
 
 # Setup PortfolioProviders
 a50PP, zz800PP = getAllPPFromDb() #getAllPP()
-BP = Factor('BP', 'Book/Price', BPCalc, a50PP)
-#BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
+BP_a50PP = Factor('BP', 'Book/Price', BPCalc, a50PP)
+#BP_zz800PP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
 # zBP = BP.Z(False, zz800PP)
 # zBP_SN = BP.Z(True, zz800PP)
 
 # Calculate Scores and Save
-BP.CalcScoresAndSave(CacheDts, a50PP)
-#BP.CalcScoresAndSave(CacheDts, zz800PP)
+BP_a50PP.CalcScoresAndSave(CacheDts, a50PP)
+#BP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
 # zBP.CalcScoresAndSave(CacheDts, zz800PP)
 # zBP_SN.CalcScoresAndSave(CacheDts, zz800PP)

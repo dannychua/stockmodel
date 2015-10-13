@@ -7,11 +7,12 @@
 # %%
 # % it is a handle class
 import pandas as pd
-from pandas import Timestamp
+
 import GlobalConstant
 from QTimeSeries import QTimeSeries
 from SectorIndustry import SectorIndustry
 from Utils import Str2Date
+
 
 class Stock:
     def __init__(self, windID, ticker, shortName, name, exchange, listBoard, listDate):
