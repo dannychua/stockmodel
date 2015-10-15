@@ -1,8 +1,8 @@
 __author__ = 'xiaofeng'
 from nose.tools import assert_equal
 
-from common.Factor import *
-from common.Factorlib.BPCalc import *
+from source.common.Factor import *
+from source.common.Factorlib.BPCalc import *
 from source.common.Utils import *
 
 
