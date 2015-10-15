@@ -121,7 +121,7 @@ class ReturnSeries(QTimeSeries):
     @property
     def CompCumReturns(self):
         """ Compound cumulative returns, starting from 1.0 """
-        if not self.__CompCumReturns is None:
+        if self.__CompCumReturns is None:
             self.__calc()
         return self.__CompCumReturns
 
@@ -129,7 +129,7 @@ class ReturnSeries(QTimeSeries):
     @property
     def CumReturns(self):
         """ Non-compound cumulative return, starting from 0 """
-        if not self.__CumReturns is None:
+        if self.__CumReturns is None:
             self.__calc()
         return self.__CumReturns
 
