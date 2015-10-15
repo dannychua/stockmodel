@@ -2,7 +2,7 @@ from nose.tools import with_setup
 from nose.tools import assert_equal
 from nose.tools import assert_almost_equal
 
-from source.common import ReturnSeries
+from source.common.ReturnSeries import ReturnSeries
 
 
 class TestReturnSeries:
