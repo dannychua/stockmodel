@@ -1,5 +1,5 @@
 __author__ = 'xiaofeng'
-
+from source.common.Stock import *
 
 # more test cases needed to cover all the biz logic
 def test_CalcStockReturns():

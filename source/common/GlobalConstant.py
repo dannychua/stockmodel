@@ -1,5 +1,6 @@
 __author__ = 'xiaodan'
 from datetime import datetime
+from source.local_env import *
 
 # %% header
 # % store all constant variables that can be accessed globally
