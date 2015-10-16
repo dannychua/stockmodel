@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import source.common.GlobalConstant as GlobalConstant
+import GlobalConstant as GlobalConstant
 
 
 def BPCalc(stockID, date):
@@ -82,5 +82,3 @@ def __getIndicatorFromDB(stockID, date, fieldName):
         return np.nan
     val = df.iloc[0]['F']
     return val
-
-

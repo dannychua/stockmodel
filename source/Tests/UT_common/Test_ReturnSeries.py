@@ -2,7 +2,7 @@ from nose.tools import with_setup
 from nose.tools import assert_equal
 from nose.tools import assert_almost_equal
 
-from source.common import ReturnSeries
+from source.common.ReturnSeries import ReturnSeries
 
 
 class TestReturnSeries:
@@ -16,16 +16,16 @@ class TestReturnSeries:
     @with_setup(setUp, tearDown)
 
     def test_annMean(self):
-        assert_almost_equal (self.returnSeries.annMean, 1110.0)
+        assert_almost_equal (self.returnSeries.AnnMean, 1110.0)
 
     def test_annStd(self):
-        assert_almost_equal (self.returnSeries.annStd, 573.201535239)
+        assert_almost_equal (self.returnSeries.AnnStd, 573.201535239)
 
     def test_sr(self):
-        assert_almost_equal (self.returnSeries.sr, 3.87298334621)
+        assert_almost_equal (self.returnSeries.SR, 3.87298334621)
 
     def test_returns(self):
-        assert_equal (self.returnSeries.returns, [111, 222, 333, 444])
+        assert_equal (self.returnSeries.Returns, [111, 222, 333, 444])
 
     def test_compCumReturns(self):
-        assert_equal (self.returnSeries.compCumReturns.iloc[-1], 3643368984)
+        assert_equal (self.returnSeries.CompCumReturns.iloc[-1], 3643368984)

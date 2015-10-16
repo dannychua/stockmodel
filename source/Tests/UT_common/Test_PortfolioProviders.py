@@ -1,6 +1,5 @@
 from nose.tools import assert_equal
-
-from source.common import PortfolioProviders
+from source.common.PortfolioProviders import PortfolioProviders
 
 
 def test_getClosingPx():
@@ -16,6 +15,3 @@ def test_getA50():
 	stockID = '601991.SH'
 	wt = portfolio.WeightOfStock(stockID)   ### the order of stocks is uncertain
 	assert_equal((wt, stockID), (0.274, '601991.SH'))
-
-test_getA50()
-test_getClosingPx()
