@@ -7,6 +7,7 @@ import os
 import cPickle
 import collections
 from QTimeSeries import QTimeSeries
+from Utils import Str2Date
 
 class SectorIndustry:
     WINDIndustry = None
@@ -30,9 +31,9 @@ class SectorIndustry:
         windIndustry_tmp = collections.defaultdict(list)
         for row in curs.fetchall():
             windID, code, entryDt, removeDt, cur_sign = row
-            if type(entryDt) is str:
-                entryDt = time.strptime(entryDt, '%Y%m%d')
-                windIndustry_tmp[windID].append([entryDt, code])
+            entryDt = Str2Date(entryDt)
+            removeDt = Str2Date(removeDt)
+            windIndustry_tmp[windID].append([entryDt, code])
         windIndustry = {}
         for windID, vals in windIndustry_tmp.iteritems():
             dates = []

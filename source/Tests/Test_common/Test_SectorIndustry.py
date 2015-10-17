@@ -14,7 +14,7 @@ def test_SectorIndustry():
     date = Str2Date('20140101')  # New Year Holiday
     #a = SectorIndustry.loadWINDIndustry()
 
-    ts = sectorInd[windID]
+    ts = sectorInd.WINDIndustry[windID]
     print ts.ValueAsOf(date)
 
 test_SectorIndustry()
