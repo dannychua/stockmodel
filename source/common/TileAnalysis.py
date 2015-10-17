@@ -9,7 +9,9 @@ from Stock import *
 from ReturnSeries import *
 from QTimeSeries import QTimeSeries
 import PortfolioProvider
-
+from Factorlib.WINDIndicators import *
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from buildFactorCache import getAllPP
 
 class TileAnalysis:
     """ The tile analysis is to put all stocks into equally sized groups and the number of groups is defined by Tile
@@ -64,8 +66,8 @@ class TileAnalysis:
 
             ## assuming nans are on the top !!!! need to be tested!!!
             for j in range(numStocksInTile):
-                topTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[j+numNans]]).TotalReturnInRange_Bk(dt, nextDt)
-                botTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[numStocksInTile-j+1]]).TotalReturnInRange_Bk(dt, nextDt)
+                topTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[j+numNans]]).TotalReturnInRange_VWAP_Bk(dt, nextDt)
+                botTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[numStocksInTile-j+1]]).TotalReturnInRange_VWAP_Bk(dt, nextDt)
 
             # equal weighted for now, later need to check whether it is cap weighted or equal weighted
             topRet = np.nanmean(topTileStkRets)
@@ -97,5 +99,6 @@ class TileAnalysis:
 
 if __name__ == '__main__':
     tileAnalysis = TileAnalysis(['20130101', '20140101', '20150101'], PortfolioProviders.getA50(), 5)
+    aa50, zz800PP = getAllPP()
     BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
     tileAnalysis.Run(BP, True)
