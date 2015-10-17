@@ -102,7 +102,7 @@ class QTimeSeries():
         self.__qSeries = self.__qSeries[self.__qSeries.index != date]
 
     @property
-    def length(self):
+    def Length(self):
         return len(self.__qSeries)
 
     @property
@@ -113,9 +113,9 @@ class QTimeSeries():
     def FirstDate(self):
         return self.__qSeries.index[0]
 
+    @property
     def LastDate(self):
-        #todo: not tested
-        return self.__qSeries.index[len(self.__qSeries)-1]
+        return self.Dates[self.Length-1]
 
     @property
     def Series(self):

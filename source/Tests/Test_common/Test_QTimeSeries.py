@@ -17,7 +17,7 @@ if __name__ == '__main__':
     print pd.FirstDate
 
     # print length
-    print pd.length
+    print pd.Length
 
     #print pandas time Series
     print pd.Series

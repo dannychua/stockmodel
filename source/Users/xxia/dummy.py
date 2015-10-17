@@ -3,11 +3,15 @@ from source.common.Utils import *
 from source.common import TileAnalysis
 import source.common.QDate as QDate
 from source.common import PortfolioProviders
+from source.common.SectorIndustry import *
 
+windID = '600048.SH'
+secInd = SectorIndustry().WINDIndustry
+date = Str2Date('20140101')  # New Year Holiday
+#a = SectorIndustry.loadWINDIndustry()
 
-a = 2
-if a:
-    print "a is None"
+ts = secInd[windID]
+print ts.ValueAsOf(date)
 
 # WeekDts = QDate.WeekEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
 # MonthDts = QDate.MonthEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )

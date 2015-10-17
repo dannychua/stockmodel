@@ -11,20 +11,20 @@ from QTimeSeries import QTimeSeries
 class SectorIndustry:
     WINDIndustry = None
     def __init__(self):
-        self.WINDIndustry = None
-        WINDIndustryCache = GlobalConstant.DATA_DIR + 'WINDIndustry.dat'
-        if os.path.exists(WINDIndustryCache):
-            with open(WINDIndustryCache) as fin:
-                self.WINDIndustry = cPickle.load(fin)
-        else:
-            self.WINDIndustry = SectorIndustry.loadWINDIndustry()
-            with open(WINDIndustryCache, 'w') as fout:
-                cPickle.dump(self.WINDIndustry, fout)
+        self.WINDIndustry = SectorIndustry.loadWINDIndustry()
+        #WINDIndustryCache = GlobalConstant.DATA_DIR + 'WINDIndustry.dat'
+        # if os.path.exists(WINDIndustryCache):
+        #     with open(WINDIndustryCache) as fin:
+        #         self.WINDIndustry = cPickle.load(fin)
+        # else:
+        #     self.WINDIndustry = SectorIndustry.loadWINDIndustry()
+        #     with open(WINDIndustryCache, 'w') as fout:
+        #         cPickle.dump(self.WINDIndustry, fout)
 
 
     @staticmethod
     def loadWINDIndustry():
-        sqlString = 'select S_INFO_WINDCODE, WIND_IND_CODE, ENTRY_DT, REMOVE_DT, CUR_SIGN from WindDB.dbo.ASHAREINDUSTRIESCLASS'
+        sqlString = 'select S_INFO_WINDCODE, WIND_IND_CODE, ENTRY_DT, REMOVE_DT, CUR_SIGN from WindDB.dbo.ASHAREINDUSTRIESCLASS order by ENTRY_DT'
         curs = GlobalConstant.DBCONN_WIND.cursor()
         curs.execute(sqlString)
         windIndustry_tmp = collections.defaultdict(list)
@@ -45,6 +45,3 @@ class SectorIndustry:
         return windIndustry
 
 
-if __name__ == '__main__':
-   # print SectorIndustry().WINDIndustry
-    pass

@@ -208,8 +208,9 @@ class Stock:
         '''
         date = Str2Date(date)
         windID = self.WindID
-        if windID in SectorIndustry.WINDIndustry:
-            ts = SectorIndustry.WINDIndustry[windID]
+        secInd = SectorIndustry().WINDIndustry
+        if windID in secInd.keys():
+            ts = secInd[windID]
             windIndustryCode = ts.ValueAsOf(date)
             if level <= 3:
                 windIndustryCode = windIndustryCode[0:(1 + 2 * level)]
