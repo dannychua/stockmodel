@@ -59,3 +59,4 @@ common/local_env.py
 data/
 source/local_env.py
 *.pdf
+local_env.py
