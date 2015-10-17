@@ -48,21 +48,3 @@ class TestWINDIndicators:
 
     def test_DividendYieldCalc(self):
         assert_almost_equal (DividendYieldCalc(self.stockID, self.date), np.float64(0.00397437324134), 4)
-
-if __name__ == '__main__':
-    # test_AllCalc()
-    # pass
-    stockID = '600230.SH'
-    date = '20140808'
-    print('BP, ' + str(BPCalc(stockID, date)))
-    print('EP, ' + str(EPCalc(stockID, date)))
-    print('EPttm, ' + str(EPttmCalc(stockID, date)))
-    print('CFP, ' + str(CFPCalc(stockID, date)))
-    print('CFPttm, ' + str(CFPttmCalc(stockID, date)))
-    print('OCFP, ' + str(OCFPCalc(stockID, date)))
-    print('OCFPttm, ' + str(OCFPttmCalc(stockID, date)))
-    print('SalesP, ' + str(SalesPCalc(stockID, date)))
-    print('SalesPttm, ' + str(SalesPttmCalc(stockID, date)))
-    print('Turnover, ' + str(TurnoverCalc(stockID, date)))
-    print('FreeTurnover, ' + str(FreeTurnoverCalc(stockID, date)))
-    print('DividendYield, ' + str(DividendYieldCalc(stockID, date)))
