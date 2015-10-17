@@ -5,7 +5,7 @@ from source.common.Factorlib.BPCalc import *
 
 
 
-class TestBPCalc:
+class TestWINDIndicators:
 
     def setUp(self):
         self.stockID = '600230.SH'
