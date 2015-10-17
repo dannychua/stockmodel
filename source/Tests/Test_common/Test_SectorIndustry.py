@@ -15,6 +15,7 @@ def test_SectorIndustry():
     #a = SectorIndustry.loadWINDIndustry()
 
     ts = sectorInd.WINDIndustry[windID]
-    print ts.ValueAsOf(date)
+    indCode = ts.ValueAsOf(date)
+    print(indCode[0:4])
 
 test_SectorIndustry()

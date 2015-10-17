@@ -199,8 +199,7 @@ class Stock:
         return 100.0 * (endValue / startValue - 1.0)
 
 
-    def WindIndustryCode(self, date, level=1):
-        #todo: to be tested
+    def WindIndustryCode(self, date, level=4):
         '''
         :param date: the date of the interest
         :param level: level could be 1,2,3,4, representing the four levels: level 1 is sector, level 4 is the full industry code
@@ -213,25 +212,19 @@ class Stock:
             ts = secInd[windID]
             windIndustryCode = ts.ValueAsOf(date)
             if level <= 3:
-                windIndustryCode = windIndustryCode[0:(1 + 2 * level)]
+                windIndustryCode = windIndustryCode[0:(2 + 2 * level)]
             return windIndustryCode
         else:
             return None
 
 
     def WindSectorCode(self, date):
-        #todo: to be tested
         '''
         the sector code is the four digits of the full industry code. See WIND document for details
         :param date: the date of the interest
         :return: stock's WIND sector code as of date
         '''
-        date = Str2Date(date)
-        windIndustryCode = self.WindIndustryCode(date)
-        if windIndustryCode is None:
-            return None
-        windSectorCode = windIndustryCode[0:3]
-        return windSectorCode
+        return self.WindIndustryCode(date, 1)
 
 
     __STOCKMASTERMAP = {}
