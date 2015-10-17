@@ -10,7 +10,7 @@ import common.GlobalConstant as GlobalConstant
 from common.PortfolioProviders import PortfolioProviders
 import common.QDate as QDate
 from common.Factor import Factor
-from common.Factorlib.BPCalc import BPCalc
+from common.Factorlib.WINDIndicators import BPCalc
 
 
 # if the database is on local pc, it may be faster to load it from db than from files  by xxia on 10/10/2015

@@ -4,7 +4,7 @@ from Utils import Str2Date
 from PortfolioProviders import PortfolioProviders
 from ReturnSeries import ReturnSeries
 from Factor import Factor
-import Factorlib.BPCalc
+import source.common.Factorlib.WINDIndicators
 from Stock import *
 from ReturnSeries import *
 from QTimeSeries import QTimeSeries
