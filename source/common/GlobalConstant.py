@@ -1,6 +1,11 @@
 __author__ = 'xiaodan'
+
 from datetime import datetime
-from source.local_env import *
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from local_env import *
+
 
 # %% header
 # % store all constant variables that can be accessed globally
