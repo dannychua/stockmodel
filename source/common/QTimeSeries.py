@@ -113,6 +113,10 @@ class QTimeSeries():
     def FirstDate(self):
         return self.__qSeries.index[0]
 
+    def LastDate(self):
+        #todo: not tested
+        return self.__qSeries.index[len(self.__qSeries)-1]
+
     @property
     def Series(self):
         return self.__qSeries, self.__valueDict

@@ -43,13 +43,9 @@ class Stock:
         sqlString = '''select TRADE_DT, S_DQ_CLOSE, S_DQ_VOLUME, S_DQ_AMOUNT*1000 as S_DQ_AMOUNT, S_DQ_ADJCLOSE, S_DQ_AVGPRICE*S_DQ_ADJFACTOR  as AdjVWAP
                      from WindDB.dbo.ASHAREEODPRICES where S_INFO_WINDCODE = '%s' and S_DQ_TRADESTATUS != '停牌'and TRADE_DT> '%s' order by trade_dt'''
         sqlString = sqlString % (str(self.WindID), str(GlobalConstant.TestStartDate.strftime('%Y%m%d')))
-        # curs = GlobalConstant.DBCONN_WIND.cursor()
-        # curs.execute(sqlString)
-        # rows = curs.fetchall()
-        # curs.close()
-        # self.StockDataFrame = pd.DataFrame(rows)
         self.StockDataFrame = pd.read_sql(sqlString, GlobalConstant.DBCONN_WIND)
 
+        # maybe we can utilize the data frame directly without the trouble of so many QTimeSeries objects!!!
         dates = self.StockDataFrame.TRADE_DT.tolist()
         dates = pd.to_datetime(dates, format('%Y%m%d'))
         self.__ClosingPx = QTimeSeries(dates, self.StockDataFrame.S_DQ_CLOSE.tolist())
@@ -109,29 +105,37 @@ class Stock:
         except:
             return None
 
-    # % calculate total returns from startDate to endDate using Adjusted closing prices with asof semantics
-    # % if startDate < FirstTradingDate, return NaN
-    # % if endDate > LastTradingDate (delisted stock) or today, replace
-    # % endDate as of the most recent date in the price series
-    # % stkReturn is in percentage
 
     def TotalReturnInRange(self, startDate, endDate):
+        '''
+        calculate the total return during the period using Adjusted closing prices with AsOf semantics
+        if startDate < FirstTradingDate, return None
+        if endDate > LastTradingDate (delisted stock) or today, replace endDate as of the most recent date in the price
+         series
+        :param startDate: the period starts from the AdjClosing price on startDate.AsOf
+        :param endDate:  the period ends at endDate.AsOf
+        :return: the total return in percentage
+        '''
         startDate = Str2Date(startDate)
         endDate = Str2Date(endDate)
-        firstDt = self.ClosingPx.FirstDate
+        firstDt = self.AdjClosingPx.FirstDate
         if (startDate < firstDt):
             return None
-        startValue = self.ClosingPx.ValueAsOf(startDate)
-        endValue = self.ClosingPx.ValueAsOf(endDate)
+        startValue = self.AdjClosingPx.ValueAsOf(startDate)
+        endValue = self.AdjClosingPx.ValueAsOf(endDate)
         return 100.0 * (endValue / startValue - 1.0)
 
-    # % calculate total returns from startDate to endDate using Adjusted VWAP with asof semantics
-    # % if startDate < FirstTradingDate, return NaN
-    # % if endDate > LastTradingDate (delisted stock) or today, replace
-    # % endDate as of the most recent date in the price series
-    # % stkReturn is in percentage
 
     def TotalReturnInRange_VWAP(self, startDate, endDate):
+        '''
+        calculate the total return during the period using Adjusted VWAP  with AsOf semantics
+        if startDate < FirstTradingDate, return None
+        if endDate > LastTradingDate (delisted stock) or today, replace endDate as of the most recent date in the price
+         series
+        :param startDate: the period starts from the VWAP price on startDate.AsOf
+        :param endDate:  the period ends at endDate.AsOf
+        :return: the total return in percentage
+        '''
         startDate = Str2Date(startDate)
         endDate = Str2Date(endDate)
 
@@ -144,8 +148,8 @@ class Stock:
         return 100.0 * (endValue / startValue - 1.0)
 
 
-        # % to be implemented: handle limit up/down days: e.g. if to buy a
-        # % stock which is limited up on the following day, wait for a day
+
+        # %
         # % when there is no limited up vice versa for selling stocks.
         # %
         # % shall be used in backtest
@@ -153,56 +157,91 @@ class Stock:
         # % to be conservative:
         # % the entry price is the VWAP on the trading day following startDate
         # % the exit price is the VWAP on the trading day following endDate
-        # % note that if stock stop-trading days should be removed
+        # %
         # %
         # % if startDate < FirstTradingDate, return NaN
         # % if endDate > LastTradingDate (delisted stock) or today, replace
         # % endDate as of the most recent date in the price series
         # % stkReturn is in percentage
 
-    def TotalReturnInRange_Bk(self, startDate, endDate):
+    def TotalReturnInRange_VWAP_Bk(self, startDate, endDate):
+        #todo: handle limit up/down days: e.g. buy a stock at its limit-up day is difficult
+        #todo: confirm that dates when stocks are stop-trading are not in the time series
+        '''
+        calculate the total return during the period using Adjusted VWAP with NextIfNone semantics
+        it is for running backtest conservatively
+        NextIfNone: if value on a date exists, return it; otherwise goes to the next data when the data is available
+        if startDate < FirstTradingDate, return None
+        if endDate > LastTradingDate (delisted stock) or today, replace endDate as of the most recent date in the price
+         series
+        Be careful when using this method, as it may have unexpected consequence
+        :param startDate: the period starts from the VWAP price on startDate.NextIfNone
+        :param endDate:  the period ends from the VWAP price on endDate.NextIfNone
+        :return: the total return in percentage
+        '''
         startDate = Str2Date(startDate)
         endDate = Str2Date(endDate)
-        firstDt = self.AdjClosingPx.FirstDate
+        firstDt = self.AdjVWAP.FirstDate
         if startDate < firstDt:
             return None
 
-        # %better return the return and the date range, so that the
-        # %caller knows how far off the return date range is from the
-        # %required data range
-        # % to be implemented: ValueAfter return the date as well
-        startValue = self.AdjVWAP.ValueAfter(startDate)
-        endValue = self.AdjVWAP.ValueAfter(endDate)
+        if endDate > self.AdjVWAP.LastDate:
+            endDate = self.AdjVWAP.LastDate
+
+        startValue = self.AdjVWAP.ValueOn(startDate)
+        if startValue is None:
+            startValue = self.AdjVWAP.ValueAfter(startDate)
+
+        endValue = self.AdjVWAP.ValueOn(endDate)
+        if endValue is None:
+            endValue = self.AdjVWAP.ValueAfter(endDate)
+
         return 100.0 * (endValue / startValue - 1.0)
 
-        # % return its WIND industry code as of date
-        # % level could be 1,2,3,4, representing the four levels
-        # % level 1 is sector
-        # % level 4 is the full industry code
-    def WindIndustryCode(self, date, level=None):
+
+    def WindIndustryCode(self, date, level=1):
+        #todo: to be tested
+        '''
+        :param date: the date of the interest
+        :param level: level could be 1,2,3,4, representing the four levels: level 1 is sector, level 4 is the full industry code
+        :return: stock's WIND industry code as of date
+        '''
         date = Str2Date(date)
         windID = self.WindID
         if windID in SectorIndustry.WINDIndustry:
             ts = SectorIndustry.WINDIndustry[windID]
             windIndustryCode = ts.ValueAsOf(date)
-            if level and level <= 3:
-                windIndustryCode = windIndustryCode[1:(2 + 2 * level)]
+            if level <= 3:
+                windIndustryCode = windIndustryCode[0:(1 + 2 * level)]
+            return windIndustryCode
         else:
-            windIndustryCode = []
+            return None
 
-        # % return its WIND sector code as of date
-        # % the sector code is the four digits of the full industry code
+
     def WindSectorCode(self, date):
+        #todo: to be tested
+        '''
+        the sector code is the four digits of the full industry code. See WIND document for details
+        :param date: the date of the interest
+        :return: stock's WIND sector code as of date
+        '''
         date = Str2Date(date)
         windIndustryCode = self.WindIndustryCode(date)
-        windSectorCode = windIndustryCode[1:4]
+        if windIndustryCode is None:
+            return None
+        windSectorCode = windIndustryCode[0:3]
         return windSectorCode
 
-    # % this is the only way to initiate a stock, which is a time
-    # % consuming operation, so we just do once for each stock
+
     __STOCKMASTERMAP = {}
     @staticmethod
     def ByWindID(windID):
+        '''
+        the only way to initiate a stock.
+        Once we map a stock, we cache it in a dictionary
+        :param windID: stock WINDID, it is a primary key for stocks in WIND
+        :return: Stock instance
+        '''
         if windID in Stock.__STOCKMASTERMAP:
             stock = Stock.__STOCKMASTERMAP[windID]
         else:
@@ -219,3 +258,5 @@ class Stock:
             Stock.__STOCKMASTERMAP[windID] = stock
 
         return stock
+
+    #todo: define DefaultInstance, IsDefaultInstance

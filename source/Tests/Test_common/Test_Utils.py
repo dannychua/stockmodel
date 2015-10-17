@@ -1,6 +1,5 @@
 __author__ = 'xiaofeng'
 from source.common.Utils import *
-from nose.tools import assert_equal
 from nose.tools import assert_greater
 
 def test_Winsorization():
