@@ -57,16 +57,20 @@ class TileAnalysis:
             except ValueError as e:
                 print 'Error: ', e
 
-            scoreSortIdx = np.argsort(scores)  # sort ascend or descend ??; is NaN on the top or down the bottom?
+            #scoreSortIdx = np.argsort(scores)  # sort ascend or descend ??; is NaN on the top or down the bottom?
+            scoreSortIdx = (-scores).argsort() # NaN always in the bottom, this is to sort in a descending order; by defaults ascending order
+
+            #total non_NaNs: All NaNs in Bottom
+            numNonNaNStocks = np.count_nonzero(~np.isnan(scores))
 
             # Initialize lists of stock returns
-            numStocksInTile = int(np.floor(len(scores) / float(self.NumTiles)))
+            numStocksInTile = int(np.floor(numNonNaNStocks / float(self.NumTiles)))
             topTileStkRets = np.zeros(numStocksInTile)
             botTileStkRets = np.zeros(numStocksInTile)
 
             ## assuming nans are on the top !!!! need to be tested!!!
             for j in range(numStocksInTile):
-                topTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[j+numNans]]).TotalReturnInRange_VWAP_Bk(dt, nextDt)
+                topTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[j]]).TotalReturnInRange_VWAP_Bk(dt, nextDt)
                 botTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[numStocksInTile-j+1]]).TotalReturnInRange_VWAP_Bk(dt, nextDt)
 
             # equal weighted for now, later need to check whether it is cap weighted or equal weighted
