@@ -13,7 +13,7 @@ date = Str2Date('20140101')  # New Year Holiday
 ts = secInd[windID]
 print ts.ValueAsOf(date)
 
-# WeekDts = QDate.WeekEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
+# WeekDts = QDate.SaturdayBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
 # MonthDts = QDate.MonthEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
 # CacheDts = QDate.UnionDistinct(WeekDts, MonthDts)
 # a50PP = PortfolioProviders.getA50()

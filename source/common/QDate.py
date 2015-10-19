@@ -1,11 +1,11 @@
 __author__ = 'xiaodan'
 import datetime
-
 import pandas as pd
 from pandas.tseries.offsets import *
 from pandas.tslib import Timestamp
 
 import GlobalConstant
+from Utils import Str2Date
 
 # %% header
 # % handle a holding and the related logic
@@ -14,65 +14,80 @@ import GlobalConstant
 #exchange trading dates
 __TradingDates = None
 def GetAllTradingDays():
+    '''
+    return trading days since DataStartDate
+    Note that Shanghai exchange had different trading dates from Shenzhen in the early period.
+    To avoid issues, we set the data start date to be 1998-01-01
+    Currently it is very slow to load data series back to 1998.
+    As a TEMPORARY solution, we load data since 2009.
+    :return: a array of trading days
+    '''
     global __TradingDates
     if __TradingDates is None:
         sql = '''select TRADE_DAYS from WindDB.dbo.ASHARECALENDAR where s_info_exchmarket = 'SSE' and TRADE_DAYS>'%s' order by TRADE_DAYS''' % GlobalConstant.TestStartDate
         curs = GlobalConstant.DBCONN_WIND.cursor()
         curs.execute(sql)
-        dates = pd.to_datetime([row[0] for row in curs.fetchall()], format='%Y%m%d')
-        # for row in curs.fetchall():
-        #     days.append(datetime.strptime(row[0], '%Y%m%d'))
+        __TradingDates = pd.to_datetime([row[0] for row in curs.fetchall()], format='%Y%m%d')
         curs.close()
-        #
-        # dates_df.columns = [x[0] for x in curs.description]
-        # #dates = datenum(char(curs.Data),'yyyymmdd');
-        #
-        # # % Shanghai exchange had different trading dates from Shenzhen
-        # # % in the early period. To avoid issues, we set start date to be the first date after 1998-01-01
-        # #startDate = datenum('19980101','yyyymmdd');
-        start_date = datetime.datetime(1998, 1, 1)
-        __TradingDates = dates[dates > start_date]
+        # datastart_date = datetime.datetime(1998, 1, 1)
+        # __TradingDates = __TradingDates[dates > datastart_date]
     return __TradingDates
 
 
-#% find all trading trades between startDate and endDate
-# % including startDate and endDate if they are trading days
-#        % startDate and endDate are either datenum or 'yyyymmdd'
 def TradingDaysBTW(startDate, endDate):
+    '''
+    find all trading trades between startDate and endDate
+    startDate and endDate are included if they are trading days
+    :param startDate: DateTime or string of "yyyymmdd"
+    :param endDate: DateTime or string of "yyyymmdd"
+    :return: an array of trading days
+    '''
     global __TradingDates
     if __TradingDates is None:
         __TradingDates = GetAllTradingDays()
+    startDate = Str2Date(startDate)
+    endDate = Str2Date(endDate)
     return __TradingDates[(__TradingDates >= startDate) & (__TradingDates <= endDate)]
 
 
-# % return the trading day which is equal to dt + shift if dt is a trading date,
-# % otherwise equal to (dt+0) + shift, where (dt+0) is the trading day prior to dt?
-# % and shift is the number of trading days
-# % shift is an integer, and can be 0, positive or negative;
 def FindTradingDay(dt, shift=0):
+    '''
+    return the trading day which is equal to dt + shift if dt is a trading date,
+    otherwise equal to (dt+0) + shift, where (dt+0) is the trading day prior to dt
+    :param dt:  DateTime or string of "yyyymmdd"
+    :param shift: the number of trading days, it is an integer, and can be 0, positive or negative;
+    :return: a trading day in the format of DateTime or None if it is out of the boundary of the trading day array
+    '''
     global __TradingDates
     if __TradingDates is None:
         __TradingDates = GetAllTradingDays()
     dates = __TradingDates
     size = len(dates)
-    if dt > Timestamp.max:
-        dt = Timestamp.max
+    dt = Str2Date(dt)
+    if dt > dates[size-1-shift]:
+        return None
+    elif dt < dates[max(shift, 0)]:
+        return None
+
     priors = dates[dates <= dt]
-    within = True if len(priors) else False
-    if within:
+    if len(priors) > 0:
         loc = dates.get_loc(priors[-1])
         if 0 <loc + shift < size:
             return dates[loc+shift]
     else:
-        delta = dates[0] - dt
-        if delta.days <= shift < size:
-            return dates[shift]
-    return None
+        return None
 
 
-# % find all month beginnings between startDate and endDate
-# % including startDate and endDate if they are month beginnings
 def MonthBeginningBtw(startDate, endDate):
+    '''
+    return all month beginnings between startDate and endDate
+    startDate or endDate is included if it is month beginning
+    :param startDate: DateTime or string of "yyyymmdd"
+    :param endDate: DateTime or string of "yyyymmdd"
+    :return: an array of pandas.tslib.Timestamp
+    '''
+    startDate = Str2Date(startDate)
+    endDate = Str2Date(endDate)
     offset = MonthBegin()
     days = []
     if startDate.day == 1:
@@ -84,28 +99,39 @@ def MonthBeginningBtw(startDate, endDate):
         dt += offset
     return pd.to_datetime(days)
 
-# % find all month ends between startDate and endDate
-# % including startDate and endDate if they are month ends
+
 def MonthEndsBtw(startDate, endDate):
+    '''
+    return all month ends between startDate and endDate
+    startDate or endDate is included if it is month ends
+    :param startDate: DateTime or string of "yyyymmdd"
+    :param endDate: DateTime or string of "yyyymmdd"
+    :return: an array of pandas.tslib.Timestamp
+    '''
+    startDate = Str2Date(startDate)
+    endDate = Str2Date(endDate)
     offset = MonthEnd()
     days = []
-    dt = last_day_of_month(startDate)
+    dt = LastDayOfMonth(startDate)
     while dt <= endDate:
         days.append(dt)
         dt += offset
     return pd.to_datetime(days)
 
 
-# % find all week ends between startDate and endDate
-# % including startDate and endDate if they are week ends
-def WeekEndsBtw(startDate, endDate):
-    #% 1997-12-27, Saturday, 729751
-    #% temporary solution; can only handle Sat b/w 1997-12-27 ~ 2015-07-25
-    #dates = 729751:7:736170;
-    #%c = datestr(b,'yyyymmdd ddd');  %% validation
+def SaturdayBtw(startDate, endDate):
+    '''
+    return all week ends between startDate and endDate
+    startDate or endDate is included if it is week ends
+    :param startDate: DateTime or string of "yyyymmdd"
+    :param endDate: DateTime or string of "yyyymmdd"
+    :return: an array of pandas.tslib.Timestamp
+    '''
+    startDate = Str2Date(startDate)
+    endDate = Str2Date(endDate)
     dt = startDate
     delta = datetime.timedelta(days=1)
-    weekend = set([5, 6])
+    weekend = set([5])
     days = []
     while dt <= endDate:
         if dt.weekday() in weekend:
@@ -114,15 +140,25 @@ def WeekEndsBtw(startDate, endDate):
     return pd.to_datetime(days)
 
 # % return the calendar day which is equal to dt + shift
-# % shift is an integer, and can be 0, positive or negative;
+# %
 def AddDays(date, shift):
+    '''
+    return the date which is "shift" apart from "date"
+    :param date: DateTime or string of "yyyymmdd"
+    :param shift: shift is an integer. It can be 0, positive or negative;
+    :return: a dateTime object
+    '''
+    date = Str2Date(date)
     return date + datetime.timedelta(days=shift)
 
 
-def UnionDistinct(dates1, dates2):
-    return dates1.union(dates2)    ### does it remove the duplicates?? how about sorting ascending?
-
-def last_day_of_month(date):
+def LastDayOfMonth(date):
+    '''
+    return the last day of the same month as "date"
+    :param date: DateTime or string of "yyyymmdd"
+    :return: a DateTime object
+    '''
+    date = Str2Date(date)
     if date.month == 12:
         return date.replace(day=31)
     return date.replace(month=date.month+1, day=1) - datetime.timedelta(days=1)

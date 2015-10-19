@@ -12,15 +12,15 @@ from Utils import Str2Date
 class SectorIndustry:
     WINDIndustry = None
     def __init__(self):
-        self.WINDIndustry = SectorIndustry.loadWINDIndustry()
-        #WINDIndustryCache = GlobalConstant.DATA_DIR + 'WINDIndustry.dat'
-        # if os.path.exists(WINDIndustryCache):
-        #     with open(WINDIndustryCache) as fin:
-        #         self.WINDIndustry = cPickle.load(fin)
-        # else:
-        #     self.WINDIndustry = SectorIndustry.loadWINDIndustry()
-        #     with open(WINDIndustryCache, 'w') as fout:
-        #         cPickle.dump(self.WINDIndustry, fout)
+        #self.WINDIndustry = SectorIndustry.loadWINDIndustry()
+        WINDIndustryCache = GlobalConstant.DATA_DIR + 'WINDIndustry.dat'
+        if os.path.exists(WINDIndustryCache):
+            with open(WINDIndustryCache) as fin:
+                self.WINDIndustry = cPickle.load(fin)
+        else:
+            self.WINDIndustry = SectorIndustry.loadWINDIndustry()
+            with open(WINDIndustryCache, 'w') as fout:
+                cPickle.dump(self.WINDIndustry, fout)
 
 
     @staticmethod

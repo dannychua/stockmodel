@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from common.QTimeSeries import QTimeSeries
+from source.common.QTimeSeries import QTimeSeries
 from source.common.Utils import Str2Date
 
 if __name__ == '__main__':
