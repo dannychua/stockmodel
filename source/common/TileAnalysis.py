@@ -71,7 +71,7 @@ class TileAnalysis:
             ## assuming nans are on the top !!!! need to be tested!!!
             for j in range(numStocksInTile):
                 topTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[j]]).TotalReturnInRange_VWAP_Bk(dt, nextDt)
-                botTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[numNonNaNStocks-j+1]]).TotalReturnInRange_VWAP_Bk(dt, nextDt)
+                botTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[-j-1]]).TotalReturnInRange_VWAP_Bk(dt, nextDt)
 
             # equal weighted for now, later need to check whether it is cap weighted or equal weighted
             topRet = np.nanmean(topTileStkRets)
