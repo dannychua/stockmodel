@@ -47,14 +47,11 @@ Thumbs.db
 #compiled python file
 *.pyc
 
-#ignore local_env.py
-common/local_env.py
-
-# Ignore Sublime Text settings
+# Sublime Text settings
 *.sublime-project
 *.sublime-workspace
 
-# Ignore cache files
+# Cache files
 *.dat
 source/local_env.py
 *.pdf
