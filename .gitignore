@@ -50,13 +50,12 @@ Thumbs.db
 #ignore local_env.py
 common/local_env.py
 
-# Ignore sublime text settings
+# Ignore Sublime Text settings
 *.sublime-project
 *.sublime-workspace
 
 # Ignore cache files
 *.dat
-data/
 source/local_env.py
 *.pdf
 local_env.py
