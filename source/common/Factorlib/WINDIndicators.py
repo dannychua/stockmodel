@@ -91,7 +91,10 @@ def __getIndicatorFromDB_All(stockID, date, fieldName):
     """ Retrieve indicators from WINDDB """
     
     global indicatorsData
-    
+
+    from datetime import datetime
+    GlobalConstant.TestStartDate = datetime(2014, 12, 31)
+
     if indicatorsData is None:
         # Query Database
         sqlQuery = """
@@ -113,6 +116,29 @@ def __getIndicatorFromDB_All(stockID, date, fieldName):
     return indicatorsData[date].ix[stockID][fieldName]
 
 
-# print 'Working...'
+
+def __getIndicatorFromDB_byStockID(stockID, fieldName):
+    """ Retrieve indicators from WINDDB """
+    
+    # Query Database
+    sqlQuery = """
+       select TRADE_DT, s_info_windcode StockID, 1/s_val_pb_new BP, 1/s_val_pe EP, 1/s_val_pe_ttm EPttm, 1/s_val_pcf_ncf CFP,
+        1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
+        1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
+       from WINDDB.DBO.AShareEODDerivativeIndicator
+       where s_info_windcode='%s'
+       and TRADE_DT>'%s' """ % (stockID, GlobalConstant.TestStartDate)
+    df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'})
+    df = df.set_index('TRADE_DT')
+
+    return df[fieldName]
+
+
+
+
+
+print 'Working...'
+print __getIndicatorFromDB_byStockID('600230.SH', 'BP')
+# print __getIndicatorFromDB_byDate('2015-01-03', 'BP')
 # print __getIndicatorFromDB_All('600230.SH', '2015-01-01', 'BP')
 
