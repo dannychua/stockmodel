@@ -135,6 +135,26 @@ def __getIndicatorFromDB_byStockID(stockID, fieldName):
 
 
 
+def __getIndicatorFromDB_byDate(date, fieldName):
+    """ Retrieve indicators from WINDDB """
+
+    # Clean date argument to match TRADE_DT format
+    date = date.replace('-', '')
+    
+    # Query Database
+    sqlQuery = """
+       select TRADE_DT, s_info_windcode StockID, 1/s_val_pb_new BP, 1/s_val_pe EP, 1/s_val_pe_ttm EPttm, 1/s_val_pcf_ncf CFP,
+        1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
+        1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
+       from WINDDB.DBO.AShareEODDerivativeIndicator
+       where TRADE_DT='%s' """ % date
+    df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'})
+    df = df.set_index('TRADE_DT')
+
+    return df[fieldName]
+
+
+
 
 
 print 'Working...'
