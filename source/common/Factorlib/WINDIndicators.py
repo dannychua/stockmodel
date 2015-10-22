@@ -11,7 +11,8 @@ from Utils import Str2Date
 
 def BPCalc(stockID, date):
     """ Retrieve Book/Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pb_new")
+    #return __getIndicatorFromDB(stockID, date, "1/s_val_pb_new")
+    return __getIndicatorFromDB_All(stockID, date, 'BP')
 
 
 def EPCalc(stockID, date):
@@ -98,7 +99,7 @@ def __getIndicatorFromDB_All(stockID, date, fieldName):
             1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
             1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
            from WINDDB.DBO.AShareEODDerivativeIndicator
-           where TRADE_DT>'%s' """ % GlobalConstant.TestEndDate
+           where TRADE_DT>'%s' """ % GlobalConstant.TestStartDate
         df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'})
 
         # Create list of df
@@ -109,8 +110,9 @@ def __getIndicatorFromDB_All(stockID, date, fieldName):
 
         # Create Panel
         indicatorsData = pd.Series(dfArray, index=dates)
-        return indicatorsData[date].ix[stockID][fieldName]
 
+    date = Str2Date(date)
+    return indicatorsData[date].ix[stockID][fieldName]
 
 
 # print 'Working...'
