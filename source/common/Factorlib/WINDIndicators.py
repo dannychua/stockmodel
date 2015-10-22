@@ -149,7 +149,7 @@ def __getIndicatorFromDB_byDate(date, fieldName):
        from WINDDB.DBO.AShareEODDerivativeIndicator
        where TRADE_DT='%s' """ % date
     df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'})
-    df = df.set_index('TRADE_DT')
+    df = df.set_index('StockID')
 
     return df[fieldName]
 
@@ -157,8 +157,8 @@ def __getIndicatorFromDB_byDate(date, fieldName):
 
 
 
-print 'Working...'
-print __getIndicatorFromDB_byStockID('600230.SH', 'BP')
+# print 'Working...'
+# print __getIndicatorFromDB_byStockID('600230.SH', 'BP')
 # print __getIndicatorFromDB_byDate('2015-01-03', 'BP')
 # print __getIndicatorFromDB_All('600230.SH', '2015-01-01', 'BP')
 
