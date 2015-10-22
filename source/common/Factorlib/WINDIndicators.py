@@ -103,10 +103,8 @@ def __getIndicatorFromDB_All(stockID, date, fieldName):
         df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'})
 
         # Create list of df
-        dfArray = []
         dates = df.TRADE_DT.unique()
-        for dt in dates:
-            dfArray.append(df[df['TRADE_DT'] == dt].set_index('StockID'))
+        dfArray = [df[df['TRADE_DT'] == dt].set_index('StockID') for dt in dates]
 
         # Create Panel
         indicatorsData = pd.Series(dfArray, index=dates)
