@@ -4,14 +4,28 @@ from source.common import TileAnalysis
 import source.common.QDate as QDate
 from source.common import PortfolioProviders
 from source.common.SectorIndustry import *
+from source.common.Factorlib.WINDIndicators import  *
 
-windID = '600048.SH'
-secInd = SectorIndustry().WINDIndustry
-date = Str2Date('20140101')  # New Year Holiday
-#a = SectorIndustry.loadWINDIndustry()
+stockID = '600230.SH'
+date1 = '20140808'
+date2 = '20150103'
 
-ts = secInd[windID]
-print ts.ValueAsOf(date)
+score1 = BPCalc(stockID, date1)
+print(score1)
+score2 = BPCalc(stockID, date2)
+print(score2)
+cacheFile = GlobalConstant.DATA_FactorScores_DIR + "WindIndicatorsCache.dat"
+pd.to_pickle(WindIndicatorsCache,cacheFile)
+
+
+
+# windID = '600048.SH'
+# secInd = SectorIndustry().WINDIndustry
+# date = Str2Date('20140101')  # New Year Holiday
+# #a = SectorIndustry.loadWINDIndustry()
+#
+# ts = secInd[windID]
+# print ts.ValueAsOf(date)
 
 # WeekDts = QDate.SaturdayBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
 # MonthDts = QDate.MonthEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )

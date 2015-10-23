@@ -166,9 +166,13 @@ def __getIndicatorFromDB_byDate(stockId, date, fieldName):
     if WindIndicatorsCache is None:
         if os.path.exists(cacheFile):
             WindIndicatorsCache = pd.read_pickle(cacheFile)  ## it is a pd.Series with index being date
-            if tradingDt in WindIndicatorsCache:
-                df = WindIndicatorsCache.ix[tradingDt]           ## should allow AsOf, e.g. allow less than 5 days stale
-                return df.ix[stockId][fieldName]
+
+    if WindIndicatorsCache is None:
+        WindIndicatorsCache = pd.TimeSeries()    # the cache file doesn't exist
+
+    if tradingDt in WindIndicatorsCache:
+        df = WindIndicatorsCache.ix[tradingDt]           ## should allow AsOf, e.g. allow less than 5 days stale
+        return df.ix[stockId][fieldName]
 
     # either the cache file doesn't exist or the cache doesn't contain the date
     # Query Database
@@ -182,11 +186,8 @@ def __getIndicatorFromDB_byDate(stockId, date, fieldName):
     df = df.set_index('StockID')
     value = df.ix[stockId][fieldName]
 
-    if WindIndicatorsCache is None:
-        WindIndicatorsCache = pd.TimeSeries()    # the cache file doesn't exist
-
     WindIndicatorsCache[tradingDt] = df
-    pd.to_pickle(WindIndicatorsCache,cacheFile)
+    #pd.to_pickle(WindIndicatorsCache,cacheFile)
 
     return value
 
