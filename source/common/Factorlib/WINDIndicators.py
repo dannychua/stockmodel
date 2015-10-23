@@ -7,12 +7,15 @@ import pandas as pd
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import GlobalConstant as GlobalConstant
 from Utils import Str2Date
+from Utils import Date2Str
+from QDate import FindTradingDay
 
 
 def BPCalc(stockID, date):
     """ Retrieve Book/Price from WINDDB """
     #return __getIndicatorFromDB(stockID, date, "1/s_val_pb_new")
-    return __getIndicatorFromDB_All(stockID, date, 'BP')
+    #return __getIndicatorFromDB_All(stockID, date, 'BP')
+    return __getIndicatorFromDB_byDate(stockID, date, 'BP')
 
 
 def EPCalc(stockID, date):
@@ -92,8 +95,8 @@ def __getIndicatorFromDB_All(stockID, date, fieldName):
     
     global indicatorsData
 
-    from datetime import datetime
-    GlobalConstant.TestStartDate = datetime(2014, 12, 31)
+    # from datetime import datetime
+    # GlobalConstant.TestStartDate = datetime(2014, 12, 31)
 
     if indicatorsData is None:
         # Query Database
@@ -134,24 +137,58 @@ def __getIndicatorFromDB_byStockID(stockID, fieldName):
     return df[fieldName]
 
 
+WindIndicatorsCache = None
+def __getIndicatorFromDB_byDate(stockId, date, fieldName):
+    '''
+        retrieve indicators from WINDDB by date.
+        To improve efficiency, the data is only loaded once.
+        The data "WindIndicatorsCache" is a pd.Series (time series) of pd.DataFrame (rows are indexed by StockID,
+            and columns are indexed by FieldName).
+        To get the data item requested, do the following
+        1. check if the global variable WindIndicatorsCache is None. If yes, load it from the cache file
+        2. get the asof trading day of the input "date"
+        3. check whether WindIndicatorsCache has the date
+            3.1 if yes, return the data item directly
+        4 if not, submit the query and append the data frame to the variable
+        5 serialize WindIndicatorsCache to the cache file
+        6 return the data item.
 
-def __getIndicatorFromDB_byDate(date, fieldName):
-    """ Retrieve indicators from WINDDB """
+    :param stockId: Wind stock id
+    :param date: a string with format "yyyymmdd"
+    :param fieldName: a string
+    :return: a float64
+    '''
 
-    # Clean date argument to match TRADE_DT format
-    date = date.replace('-', '')
-    
+    tradingDt = Date2Str(FindTradingDay(date))
+    global WindIndicatorsCache
+    cacheFile = GlobalConstant.DATA_FactorScores_DIR + "WindIndicatorsCache.dat"
+
+    if WindIndicatorsCache is None:
+        if os.path.exists(cacheFile):
+            WindIndicatorsCache = pd.read_pickle(cacheFile)  ## it is a pd.Series with index being date
+            if tradingDt in WindIndicatorsCache:
+                df = WindIndicatorsCache.ix[tradingDt]           ## should allow AsOf, e.g. allow less than 5 days stale
+                return df.ix[stockId][fieldName]
+
+    # either the cache file doesn't exist or the cache doesn't contain the date
     # Query Database
     sqlQuery = """
-       select TRADE_DT, s_info_windcode StockID, 1/s_val_pb_new BP, 1/s_val_pe EP, 1/s_val_pe_ttm EPttm, 1/s_val_pcf_ncf CFP,
+       select s_info_windcode StockID, 1/s_val_pb_new BP, 1/s_val_pe EP, 1/s_val_pe_ttm EPttm, 1/s_val_pcf_ncf CFP,
         1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
         1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
        from WINDDB.DBO.AShareEODDerivativeIndicator
-       where TRADE_DT='%s' """ % date
-    df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'})
+       where TRADE_DT='%s' """ % tradingDt
+    df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
     df = df.set_index('StockID')
+    value = df.ix[stockId][fieldName]
 
-    return df[fieldName]
+    if WindIndicatorsCache is None:
+        WindIndicatorsCache = pd.TimeSeries()    # the cache file doesn't exist
+
+    WindIndicatorsCache[tradingDt] = df
+    pd.to_pickle(WindIndicatorsCache,cacheFile)
+
+    return value
 
 
 
