@@ -10,8 +10,6 @@ from ReturnSeries import *
 from QTimeSeries import QTimeSeries
 import PortfolioProvider
 from Factorlib.WINDIndicators import *
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from buildFactorCache import getAllPP
 
 class TileAnalysis:
     """ The tile analysis is to put all stocks into equally sized groups and the number of groups is defined by Tile
@@ -101,8 +99,8 @@ class TileAnalysis:
 
 
 
-if __name__ == '__main__':
-    tileAnalysis = TileAnalysis(['20130101', '20140101', '20150101'], PortfolioProviders.getA50(), 5)
-    aa50, zz800PP = getAllPP()
-    BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
-    tileAnalysis.Run(BP, True)
+# if __name__ == '__main__':
+#     tileAnalysis = TileAnalysis(['20130101', '20140101', '20150101'], PortfolioProviders.getA50(), 5)
+#     aa50, zz800PP = getAllPP()
+#     BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
+#     tileAnalysis.Run(BP, True)

@@ -8,6 +8,13 @@ def Str2Date(date):
         return datetime.strptime(date, '%Y%m%d')
     return date
 
+def Date2Str(date):
+    '''date will be converted as a datetime obj if the date is a string,with the format "yyyymmdd" '''
+    if type(date) is not str:
+        return date.strftime("%Y%m%d")
+    return date
+
+
 def WinsorizedZ(rawscores, Cap = 3.5, Tolerance = 0.1):
     ''' return a winsorized Z scores, where winsorization is robust normalization
     :param rawscores: a ndarray (numpy array) of raw scores which may include NaN

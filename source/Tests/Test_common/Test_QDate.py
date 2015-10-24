@@ -1,6 +1,7 @@
 from source.common.QDate import *
 from source.common.Utils import *
 from pandas import *
+import time
 
 def test_tradingDays():
     dt1 = datetime(1990,1,1)
@@ -30,6 +31,9 @@ def test_tradingDays():
     print AddDays(dt3, -10)
     print AddDays(dt3, 0)
     print LastDayOfMonth(dt3)
+
+    print Date2Str(dt2)
+
 
 test_tradingDays()
 
