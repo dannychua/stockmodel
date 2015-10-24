@@ -1,12 +1,13 @@
 import sys
 import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 import pandas as pd
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import GlobalConstant as GlobalConstant
 from Utils import Str2Date
+
 
 
 def BPCalc(stockID, date):
@@ -86,58 +87,68 @@ def __getIndicatorFromDB(stockID, date, fieldName):
     return val
 
 
+
+
+
 # Loading of this module will cause the creation of this cache
 indicatorsData = None
 
-def __getIndicatorFromDB_All(stockID, date, fieldName, purgeCache=False):
-    """ Retrieve indicators from WINDDB """
+def __getIndicator(stockID, date, fieldName, purgeCache=False):
+    """ Retrieve all indicators from WINDDB """
     
     global indicatorsData
 
     # If cache not in memory
     if indicatorsData is None or purgeCache == True:
 
-        # HDF5 Database Cache
+        # Try the HDFStore Cache
         hdfPath = os.path.join(GlobalConstant.DATA_DIR, 'db.h5')
-        print hdfPath
         store = pd.HDFStore(hdfPath)
 
-        # If cache not in DFStore
+        # If cache not in HDFStore
         if 'df_indicators' not in store or purgeCache == True:
+            # Dump indicators from DB to HDFStore
+            __writeAllIndicatorsFromDbToHDFStore(store)
 
-            # Start with a clean empty DataFrame
-            store.put('df_indicators', pd.DataFrame(), 'table')   
-
-            # Query Database
-            sqlQuery = """
-               select TRADE_DT, s_info_windcode StockID, 1/s_val_pb_new BP, 1/s_val_pe EP, 1/s_val_pe_ttm EPttm, 1/s_val_pcf_ncf CFP,
-                1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
-                1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
-               from WINDDB.DBO.AShareEODDerivativeIndicator
-               where TRADE_DT>'%s' """ % GlobalConstant.TestStartDate
-
-            # SELECT from DB in chunks and persist chunk to disk before retriving next chunk from DB
-            for chunk in pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'}, chunksize=10000):
-                
-                # Convert None to NaN since Pandas cant tell dtypes if entire column retrieved from database are NULLs
-                df = chunk.fillna(value=np.nan).set_index('TRADE_DT')
-
-                # Persist to HDF5 Store
-                store.append('df_indicators', df)
-
-            store.close()
-
-            # Reindex
+            # Reindex store['df_indicators']
             __reindexIndicatorsHDFStore()
 
-        else :
-            # Retrieve from HDFS
-            indicatorsData = store.get('df_indicators')
-    
+        # Hit the HDFStore cache
+        indicatorsData = store.get('df_indicators') 
+        store.close()
+
+    return indicatorsData.loc[date, stockID][fieldName]
+
+
+def  __writeAllIndicatorsFromDbToHDFStore(store):
+    """ Retrieve all Indicator data from database and write to HDFStore """
+
+    # Start with a clean empty DataFrame
+    store.put('df_indicators', pd.DataFrame(), 'table')   
+
+    # Query Database
+    sqlQuery = """
+       select TRADE_DT, s_info_windcode StockID, 1/s_val_pb_new BP, 1/s_val_pe EP, 1/s_val_pe_ttm EPttm, 1/s_val_pcf_ncf CFP,
+        1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
+        1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
+       from WINDDB.DBO.AShareEODDerivativeIndicator
+       where TRADE_DT>'%s' """ % GlobalConstant.TestStartDate
+
+    # SELECT from DB in chunks,
+    # persist chunk to disk before retriving next chunk from DB
+    for chunk in pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'}, chunksize=10000):
+        
+        # Convert None to NaN since Pandas cant tell dtypes if entire column retrieved from database are NULLs
+        df = chunk.fillna(value=np.nan).set_index('TRADE_DT')
+
+        # Persist to HDF5 Store
+        store.append('df_indicators', df)
+
+    return
 
 
 def __reindexIndicatorsHDFStore():
-    """ Set up MultiIndex DataFrame data structure for df_indicators """
+    """ Rebuild df_indicators to enable MultiIndex DataFrame data structure """
 
     # Load df from HDFStore
     hdfPath = os.path.join(GlobalConstant.DATA_DIR, 'db.h5')
@@ -153,6 +164,7 @@ def __reindexIndicatorsHDFStore():
     # Persist to HDFStore and close
     store.put('df_indicators', df)
     store.close()
+
 
 
 # def __getIndicatorFromDB_byStockID(stockID, fieldName):
@@ -198,5 +210,9 @@ def __reindexIndicatorsHDFStore():
 print 'Working...'
 # print __getIndicatorFromDB_byStockID('600230.SH', 'BP')
 # print __getIndicatorFromDB_byDate('2015-01-03', 'BP')
-__getIndicatorFromDB_All('600230.SH', '20150101', 'BP')
+print __getIndicator('600230.SH', '20150101', 'BP')
+print __getIndicator('000001.SZ', '20150102', 'BP')
+print __getIndicator('000002.SZ', '20150102', 'BP')
+print __getIndicator('000004.SZ', '20150102', 'BP')
+print __getIndicator('000005.SZ', '20150102', 'BP')
 
