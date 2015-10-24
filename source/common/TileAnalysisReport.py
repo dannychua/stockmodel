@@ -2,7 +2,6 @@ __author__ = 'xiaodan'
 import sys, os
 from TileAnalysis import TileAnalysis
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from buildFactorCache import getAllPP
 from Factorlib.WINDIndicators import *
 from Factor import Factor
 from PortfolioProviders import PortfolioProviders
@@ -134,9 +133,9 @@ class TileAnalysisReport(TileAnalysis):
         plt.savefig(pp, format='pdf')
         pp.close()
 
-if __name__ == '__main__':
-    tileAnalysis = TileAnalysisReport(['20130101', '20140101', '20150101'], PortfolioProviders.getA50(), 5)
-    aa50, zz800PP = getAllPP()
-    BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
-    tileAnalysis.Report(factor=BP, reportFileName=GlobalConstant.DATA_DIR+'/TitleReturnAnalysis_demeanBM.pdf', bmDemean=True)
-    tileAnalysis.Report(factor=BP,  reportFileName=GlobalConstant.DATA_DIR+'/TitleReturnAnalysis.pdf', bmDemean=False)
+# if __name__ == '__main__':
+#     tileAnalysis = TileAnalysisReport(['20130101', '20140101', '20150101'], PortfolioProviders.getA50(), 5)
+#     aa50, zz800PP = getAllPP()
+#     BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
+#     tileAnalysis.Report(factor=BP, reportFileName=GlobalConstant.DATA_DIR+'/TitleReturnAnalysis_demeanBM.pdf', bmDemean=True)
+#     tileAnalysis.Report(factor=BP,  reportFileName=GlobalConstant.DATA_DIR+'/TitleReturnAnalysis.pdf', bmDemean=False)

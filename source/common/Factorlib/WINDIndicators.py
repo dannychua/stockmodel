@@ -13,64 +13,62 @@ from QDate import FindTradingDay
 
 def BPCalc(stockID, date):
     """ Retrieve Book/Price from WINDDB """
-    #return __getIndicatorFromDB(stockID, date, "1/s_val_pb_new")
-    #return __getIndicatorFromDB_All(stockID, date, 'BP')
     return __getIndicatorFromDB_byDate(stockID, date, 'BP')
 
 
 def EPCalc(stockID, date):
     """ Retrieve Earnings/Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pe")
+    return __getIndicatorFromDB_byDate(stockID, date, 'EP')
 
 
 def EPttmCalc(stockID, date):
     """ Retrieve trailing twelve month Earnings/Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pe_ttm")
+    return __getIndicatorFromDB_byDate(stockID, date, 'EPttm')
 
 
 def CFPCalc(stockID, date):
     """ Retrieve Net Cash flow / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pcf_ncf")
+    return __getIndicatorFromDB_byDate(stockID, date, 'CFP')
 
 
 def CFPttmCalc(stockID, date):
     """ Retrieve trailing twelve month Net Cash flow / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pcf_ncfttm")
+    return __getIndicatorFromDB_byDate(stockID, date, 'CFPttm')
 
 
 def OCFPCalc(stockID, date):
     """ Retrieve Operating Cash flow / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pcf_ocf")
+    return __getIndicatorFromDB_byDate(stockID, date, 'OCFP')
 
 
 def OCFPttmCalc(stockID, date):
     """ Retrieve trailing twelve month Operating Cash flow / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pcf_ocfttm")
+    return __getIndicatorFromDB_byDate(stockID, date, 'OCFPttm')
 
 
 def SalesPCalc(stockID, date):
     """ Retrieve Sales / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_ps")
+    return __getIndicatorFromDB_byDate(stockID, date, 'SalesP')
 
 
 def SalesPttmCalc(stockID, date):
     """ Retrieve trailing twelve month Sales / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_ps_ttm")
+    return __getIndicatorFromDB_byDate(stockID, date, 'SalesPttm')
 
 
 def TurnoverCalc(stockID, date):
     """ Retrieve turnover from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "s_dq_turn")
+    return __getIndicatorFromDB_byDate(stockID, date, 'Turnover')
 
 
 def FreeTurnoverCalc(stockID, date):
     """ Retrieve freeturnover from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "s_dq_freeturnover")
+    return __getIndicatorFromDB_byDate(stockID, date, 'FreeTurnover')
 
 
 def DividendYieldCalc(stockID, date):
     """ Retrieve dividend yield from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_price_div_dps")
+    return __getIndicatorFromDB_byDate(stockID, date, 'DividendYield')
 
 
 def __getIndicatorFromDB(stockID, date, fieldName):
@@ -87,54 +85,6 @@ def __getIndicatorFromDB(stockID, date, fieldName):
         return np.nan
     val = df.iloc[0]['F']
     return val
-
-
-indicatorsData = None
-def __getIndicatorFromDB_All(stockID, date, fieldName):
-    """ Retrieve indicators from WINDDB """
-    
-    global indicatorsData
-
-    # from datetime import datetime
-    # GlobalConstant.TestStartDate = datetime(2014, 12, 31)
-
-    if indicatorsData is None:
-        # Query Database
-        sqlQuery = """
-           select TRADE_DT, s_info_windcode StockID, 1/s_val_pb_new BP, 1/s_val_pe EP, 1/s_val_pe_ttm EPttm, 1/s_val_pcf_ncf CFP,
-            1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
-            1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
-           from WINDDB.DBO.AShareEODDerivativeIndicator
-           where TRADE_DT>'%s' """ % GlobalConstant.TestStartDate
-        df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'})
-
-        # Create list of df
-        dates = df.TRADE_DT.unique()
-        dfArray = [df[df['TRADE_DT'] == dt].set_index('StockID') for dt in dates]
-
-        # Create Panel
-        indicatorsData = pd.Series(dfArray, index=dates)
-
-    date = Str2Date(date)
-    return indicatorsData[date].ix[stockID][fieldName]
-
-
-
-def __getIndicatorFromDB_byStockID(stockID, fieldName):
-    """ Retrieve indicators from WINDDB """
-    
-    # Query Database
-    sqlQuery = """
-       select TRADE_DT, s_info_windcode StockID, 1/s_val_pb_new BP, 1/s_val_pe EP, 1/s_val_pe_ttm EPttm, 1/s_val_pcf_ncf CFP,
-        1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
-        1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
-       from WINDDB.DBO.AShareEODDerivativeIndicator
-       where s_info_windcode='%s'
-       and TRADE_DT>'%s' """ % (stockID, GlobalConstant.TestStartDate)
-    df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'})
-    df = df.set_index('TRADE_DT')
-
-    return df[fieldName]
 
 
 WindIndicatorsCache = None
@@ -172,7 +122,9 @@ def __getIndicatorFromDB_byDate(stockId, date, fieldName):
 
     if tradingDt in WindIndicatorsCache:
         df = WindIndicatorsCache.ix[tradingDt]           ## should allow AsOf, e.g. allow less than 5 days stale
-        return df.ix[stockId][fieldName]
+        if stockId in df.index:
+            return df.ix[stockId][fieldName]
+        return None
 
     # either the cache file doesn't exist or the cache doesn't contain the date
     # Query Database
@@ -191,7 +143,9 @@ def __getIndicatorFromDB_byDate(stockId, date, fieldName):
 
     return value
 
-
+def SaveWindIndicatorsCache():
+    cacheFile = GlobalConstant.DATA_FactorScores_DIR + "WindIndicatorsCache.dat"
+    pd.to_pickle(WindIndicatorsCache,cacheFile)
 
 
 
@@ -200,3 +154,31 @@ def __getIndicatorFromDB_byDate(stockId, date, fieldName):
 # print __getIndicatorFromDB_byDate('2015-01-03', 'BP')
 # print __getIndicatorFromDB_All('600230.SH', '2015-01-01', 'BP')
 
+## to be deleted
+# indicatorsData = None
+# def __getIndicatorFromDB_All(stockID, date, fieldName):
+#     """ Retrieve indicators from WINDDB """
+#     global indicatorsData
+#     # from datetime import datetime
+#     # GlobalConstant.TestStartDate = datetime(2014, 12, 31)
+#
+#     if indicatorsData is None:
+#         # Query Database
+#         sqlQuery = """
+#            select TRADE_DT, s_info_windcode StockID, 1/s_val_pb_new BP, 1/s_val_pe EP, 1/s_val_pe_ttm EPttm, 1/s_val_pcf_ncf CFP,
+#             1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
+#             1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
+#            from WINDDB.DBO.AShareEODDerivativeIndicator
+#            where TRADE_DT>'%s' """ % GlobalConstant.TestStartDate
+#         df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'})
+#
+#         # Create list of df
+#         dates = df.TRADE_DT.unique()
+#         dfArray = [df[df['TRADE_DT'] == dt].set_index('StockID') for dt in dates]
+#
+#         # Create Panel
+#         indicatorsData = pd.Series(dfArray, index=dates)
+#
+#     date = Str2Date(date)
+#     return indicatorsData[date].ix[stockID][fieldName]
+#
