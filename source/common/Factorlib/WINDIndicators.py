@@ -127,12 +127,32 @@ def __getIndicatorFromDB_All(stockID, date, fieldName, purgeCache=False):
 
             store.close()
 
+            # Reindex
+            __reindexIndicatorsHDFStore()
+
         else :
             # Retrieve from HDFS
             indicatorsData = store.get('df_indicators')
     
 
 
+def __reindexIndicatorsHDFStore():
+    """ Set up MultiIndex DataFrame data structure for df_indicators """
+
+    # Load df from HDFStore
+    hdfPath = os.path.join(GlobalConstant.DATA_DIR, 'db.h5')
+    store = pd.HDFStore(hdfPath)
+    df = store.get('df_indicators')    
+
+    # Reset index to col (index must be set previously during read_sql step of creating .h5 store's df for SQL retrival by chunk)
+    df.reset_index(inplace=True)
+
+    # Reindex with MultiIndex
+    df = df.set_index(['TRADE_DT', 'StockID']).sortlevel()
+
+    # Persist to HDFStore and close
+    store.put('df_indicators', df)
+    store.close()
 
 
 # def __getIndicatorFromDB_byStockID(stockID, fieldName):
