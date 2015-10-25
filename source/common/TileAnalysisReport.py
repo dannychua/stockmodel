@@ -114,12 +114,10 @@ class TileAnalysisReport(TileAnalysis):
 
         colLabels = ['Ann Returns', 'Ann Std', 'Sharp Ratio']
 
-        y_offset = np.array([0.0] * len(colLabels))
         cell_text = []
         n_rows = len(data)
         for row in xrange(n_rows):
-            y_offset = y_offset + data[row]
-            cell_text.append(['%1.2f' % x for x in y_offset])
+            cell_text.append(['%1.2f' % x for x in data[row]])
         the_table = plt.table(cellText=cell_text,
                               colWidths =[0.15]*len(colLabels),
                       rowLabels=rowLabels,
@@ -132,10 +130,3 @@ class TileAnalysisReport(TileAnalysis):
         pp = PdfPages(reportFileName)
         plt.savefig(pp, format='pdf')
         pp.close()
-
-# if __name__ == '__main__':
-#     tileAnalysis = TileAnalysisReport(['20130101', '20140101', '20150101'], PortfolioProviders.getA50(), 5)
-#     aa50, zz800PP = getAllPP()
-#     BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
-#     tileAnalysis.Report(factor=BP, reportFileName=GlobalConstant.DATA_DIR+'/TitleReturnAnalysis_demeanBM.pdf', bmDemean=True)
-#     tileAnalysis.Report(factor=BP,  reportFileName=GlobalConstant.DATA_DIR+'/TitleReturnAnalysis.pdf', bmDemean=False)
