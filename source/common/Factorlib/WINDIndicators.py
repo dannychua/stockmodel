@@ -13,62 +13,62 @@ from Utils import Str2Date
 def BPCalc(stockID, date):
     """ Retrieve Book/Price from WINDDB """
     #return __getIndicatorFromDB(stockID, date, "1/s_val_pb_new")
-    return __getIndicatorFromDB_All(stockID, date, 'BP')
+    return __getIndicator(stockID, date, 'BP')
 
 
 def EPCalc(stockID, date):
     """ Retrieve Earnings/Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pe")
+    return __getIndicator(stockID, date, "1/s_val_pe")
 
 
 def EPttmCalc(stockID, date):
     """ Retrieve trailing twelve month Earnings/Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pe_ttm")
+    return __getIndicator(stockID, date, "1/s_val_pe_ttm")
 
 
 def CFPCalc(stockID, date):
     """ Retrieve Net Cash flow / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pcf_ncf")
+    return __getIndicator(stockID, date, "1/s_val_pcf_ncf")
 
 
 def CFPttmCalc(stockID, date):
     """ Retrieve trailing twelve month Net Cash flow / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pcf_ncfttm")
+    return __getIndicator(stockID, date, "1/s_val_pcf_ncfttm")
 
 
 def OCFPCalc(stockID, date):
     """ Retrieve Operating Cash flow / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pcf_ocf")
+    return __getIndicator(stockID, date, "1/s_val_pcf_ocf")
 
 
 def OCFPttmCalc(stockID, date):
     """ Retrieve trailing twelve month Operating Cash flow / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_pcf_ocfttm")
+    return __getIndicator(stockID, date, "1/s_val_pcf_ocfttm")
 
 
 def SalesPCalc(stockID, date):
     """ Retrieve Sales / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_ps")
+    return __getIndicator(stockID, date, "1/s_val_ps")
 
 
 def SalesPttmCalc(stockID, date):
     """ Retrieve trailing twelve month Sales / Price from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_val_ps_ttm")
+    return __getIndicator(stockID, date, "1/s_val_ps_ttm")
 
 
 def TurnoverCalc(stockID, date):
     """ Retrieve turnover from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "s_dq_turn")
+    return __getIndicator(stockID, date, "s_dq_turn")
 
 
 def FreeTurnoverCalc(stockID, date):
     """ Retrieve freeturnover from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "s_dq_freeturnover")
+    return __getIndicator(stockID, date, "s_dq_freeturnover")
 
 
 def DividendYieldCalc(stockID, date):
     """ Retrieve dividend yield from WINDDB """
-    return __getIndicatorFromDB(stockID, date, "1/s_price_div_dps")
+    return __getIndicator(stockID, date, "1/s_price_div_dps")
 
 
 def __getIndicatorFromDB(stockID, date, fieldName):
@@ -99,14 +99,17 @@ def __getIndicator(stockID, date, fieldName, purgeCache=False):
     global indicatorsData
 
     # If cache not in memory
-    if indicatorsData is None or purgeCache == True:
+    if (indicatorsData is None) or (purgeCache == True):
+        print 'indicatorsData not in memory'
 
         # Try the HDFStore Cache
         hdfPath = os.path.join(GlobalConstant.DATA_DIR, 'db.h5')
         store = pd.HDFStore(hdfPath)
 
         # If cache not in HDFStore
-        if 'df_indicators' not in store or purgeCache == True:
+        if ('df_indicators' not in store) or (purgeCache == True):
+            print 'indicatorsData not in HDFStore'
+
             # Dump indicators from DB to HDFStore
             __writeAllIndicatorsFromDbToHDFStore(store)
 
@@ -115,9 +118,14 @@ def __getIndicator(stockID, date, fieldName, purgeCache=False):
 
         # Hit the HDFStore cache
         indicatorsData = store.get('df_indicators') 
+        print 'df_indicators loaded from disk cache'
         store.close()
 
-    return indicatorsData.loc[date, stockID][fieldName]
+        try:
+            return indicatorsData.loc[date, stockID][fieldName]
+        except KeyError:
+            print '[__getIndicator]: StockID not found: ', StockID
+            return np.NaN
 
 
 def  __writeAllIndicatorsFromDbToHDFStore(store):
@@ -210,9 +218,10 @@ def __reindexIndicatorsHDFStore():
 print 'Working...'
 # print __getIndicatorFromDB_byStockID('600230.SH', 'BP')
 # print __getIndicatorFromDB_byDate('2015-01-03', 'BP')
-print __getIndicator('600230.SH', '20150101', 'BP')
-print __getIndicator('000001.SZ', '20150102', 'BP')
-print __getIndicator('000002.SZ', '20150102', 'BP')
-print __getIndicator('000004.SZ', '20150102', 'BP')
-print __getIndicator('000005.SZ', '20150102', 'BP')
+
+# print __getIndicator('600230.SH', '20150101', 'BP')
+# print __getIndicator('000001.SZ', '20150102', 'BP')
+# print __getIndicator('000002.SZ', '20150102', 'BP')
+# print __getIndicator('000004.SZ', '20150102', 'BP')
+# print __getIndicator('000005.SZ', '20150102', 'BP')
 
