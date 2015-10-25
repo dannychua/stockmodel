@@ -26,7 +26,7 @@ class ReturnSeries(QTimeSeries):
 
     Dates = None
 
-    def __init__(self, dates, values):
+    def __init__(self, dates, values, name=''):
         QTimeSeries.__init__(self, dates, values)
         self.__annScalar = 12.0    # assuming time series is monthly
         self.Dates = dates
@@ -36,6 +36,7 @@ class ReturnSeries(QTimeSeries):
         self.__AnnSR = None
         self.__CompCumReturns = None
         self.__CumReturns = None
+        self.Name = name
 
     def __calc(self):
         """ Calculates various statistics of the portfolio's returns """
@@ -142,9 +143,6 @@ class ReturnSeries(QTimeSeries):
         if self.__CumReturns is None:
             self.__calc()
         return self.__CumReturns
-
-
-
 
 
 if __name__ == '__main__':
