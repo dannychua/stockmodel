@@ -84,8 +84,9 @@ CacheDts = SatDts.union(MonthDts)
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 # Setup PortfolioProviders
-a50PP, zz800PP =  getAllPPFromCache() # getAllPPFromDb() #getAllPP()
-# BP_a50PP = Factor('BP', 'Book/Price', BPCalc, a50PP)
+# a50PP, zz800PP =  getAllPP()
+a50PP, zz800PP =  getAllPPFromCache()
+BP_a50PP = Factor('BP', 'Book/Price', BPCalc, a50PP)
 BP_zz800PP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
 EP_zz800PP = Factor('EP', 'Earnings/Price', EPCalc, zz800PP)
 EPttm_zz800PP = Factor('EPttm', 'TTM Earnings/Price', EPttmCalc, zz800PP)
@@ -99,23 +100,20 @@ Turnover_zz800PP = Factor('Turnover', 'Turnover', TurnoverCalc, zz800PP)
 FreeTurnover_zz800PP = Factor('FreeTurnover', 'Free Turnover', TurnoverCalc, zz800PP)
 DividendYield_zz800PP = Factor('DividendYield', 'Dividend Yield', DividendYieldCalc, zz800PP)
 
-# # # zBP = BP.Z(False, zz800PP)
-# # # zBP_SN = BP.Z(True, zz800PP)
-# #
-# # # Calculate Scores and Save
+# Calculate Scores and Save
 # BP_a50PP.CalcScoresAndSave(CacheDts, a50PP)
-#BP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-#EP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-# EPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-# CFP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-# CFPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-# OCFP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-# OCFPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-# SalesP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-# SalesPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-# Turnover_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-# FreeTurnover_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-# DividendYield_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+BP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+EP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+EPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+CFP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+CFPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+OCFP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+OCFPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+SalesP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+SalesPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+Turnover_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+FreeTurnover_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+DividendYield_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
 
 
 # zBP.CalcScoresAndSave(CacheDts, zz800PP)
@@ -123,11 +121,11 @@ DividendYield_zz800PP = Factor('DividendYield', 'Dividend Yield', DividendYieldC
 
 #SaveWindIndicatorsCache()
 
-print GlobalConstant.REPORT_DIR
+# print GlobalConstant.REPORT_DIR
 
-from common.TileAnalysisReport import *
-# tileAnalysis = TileAnalysis(SatDts, zz800PP, 5)
-# tileAnalysis.Run(BP_zz800PP)
-tileAnalysis = TileAnalysisReport(SatDts, zz800PP, 5)
-tileAnalysis.Report(factor=BP_zz800PP, reportFileName=GlobalConstant.REPORT_DIR+'BP_zz800_1.pdf', bmDemean=True)
-#tileAnalysis.Report(factor=BP_zz800PP,  reportFileName=GlobalConstant.REPORT_DIR+'BP_zz800_0.pdf', bmDemean=False)
+# from common.TileAnalysisReport import *
+# # tileAnalysis = TileAnalysis(SatDts, zz800PP, 5)
+# # tileAnalysis.Run(BP_zz800PP)
+# tileAnalysis = TileAnalysisReport(SatDts, zz800PP, 5)
+# tileAnalysis.Report(factor=BP_zz800PP, reportFileName=GlobalConstant.REPORT_DIR+'BP_zz800_1.pdf', bmDemean=True)
+# #tileAnalysis.Report(factor=BP_zz800PP,  reportFileName=GlobalConstant.REPORT_DIR+'BP_zz800_0.pdf', bmDemean=False)
