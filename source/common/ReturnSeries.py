@@ -4,7 +4,6 @@ import pandas as pd
 from QTimeSeries import QTimeSeries
 
 
-
 class ReturnSeries(QTimeSeries):
     """Handles a time series of portfolios and the related logic.
 
@@ -19,7 +18,7 @@ class ReturnSeries(QTimeSeries):
             __annScalar:        a scalar used to annualize periodic returns
 
             [To be implemented]
-            tStat:              SR*sqrt(numer of years)
+            tStat:              AnnSR*sqrt(numer of years)
             hitRate:            numer of periods with positive returns / number of periods
             maxDrawdown     maximum drawdown
             sortinoRatio:       annualized mean / std(negative returns)
@@ -34,7 +33,7 @@ class ReturnSeries(QTimeSeries):
         self.__Returns = None
         self.__AnnMean = None
         self.__AnnStd = None
-        self.__SR = None
+        self.__AnnSR = None
         self.__CompCumReturns = None
         self.__CumReturns = None
 
@@ -42,28 +41,39 @@ class ReturnSeries(QTimeSeries):
         """ Calculates various statistics of the portfolio's returns """
         
         if self.Timeseries.shape[0] >= 2:
-            daysDelta = int(self.Timeseries.iloc[1] - self.Timeseries.iloc[0])
-            if daysDelta == 1 | daysDelta == 3:     # If weekday
+            daysDelta = self.Timeseries.index[1] - self.Timeseries.index[0]
+            numDays = daysDelta.days
+            if numDays == 1 or numDays == 3:     # If weekday
                 self.__annScalar = 252
-            if daysDelta == 7:                      # If weekly
+            elif numDays == 7:                      # If weekly
                 self.__annScalar = 52
-            if daysDelta > 25 & daysDelta < 33:     # If monthly
+            elif numDays > 25 & numDays < 33:     # If monthly
                 self.__annScalar = 12
-            if daysDelta > 85 & daysDelta < 95:     # If quarterly
+            elif numDays > 85 & numDays < 95:     # If quarterly
                 self.__annScalar = 4
+            else:
+                raise ValueError('Data frequency unknown: NumDays in the first period: ' + str(numDays))
 
             # Calculate statistics
             mean = self.Timeseries.mean()
             std = self.Timeseries.std()
             self.__Returns = self.Timeseries.tolist()
             self.__AnnMean = mean * self.__annScalar
-            self.__AnnStd = std * self.__annScalar
-            self.__SR = math.sqrt(self.__annScalar) * mean / std
+            self.__AnnStd = std * math.sqrt(self.__annScalar)
+            self.__AnnSR = self.__AnnMean / self.__AnnStd
 
-            # TODO: need to handle the number of periods in a year
-            numPeriods = len(self.__Returns)
-            self.__CompCumReturns = self.Timeseries.cumprod()
+            self.__CompCumReturns = self.Timeseries.cumprod()  ## wrong !!
             self.__CumReturns = self.Timeseries.cumsum()
+
+            # numPeriods = len(self.dates)
+            # obj.CompCumReturns = zeros(numPeriods,1);
+            # obj.CumReturns = zeros(numPeriods,1);
+            # obj.CompCumReturns(1) = 1+vals(1)*0.01;
+            # obj.CumReturns(1) = vals(1);
+            # for i=2:numPeriods
+            #     obj.CompCumReturns(i) = obj.CompCumReturns(i-1)*(1+vals(i)*0.01);  ## Correct
+            #     obj.CumReturns(i) = obj.CumReturns(i-1)+vals(i);
+            # end
 
 
     def plot(self, type='cr', desc=''):
@@ -103,11 +113,11 @@ class ReturnSeries(QTimeSeries):
 
 
     @property
-    def SR(self):
-        """ Sharpe ratio """
-        if self.__SR is None:
+    def AnnSR(self):
+        """ Annualized Sharpe ratio """
+        if self.__AnnSR is None:
             self.__calc()
-        return self.__SR
+        return self.__AnnSR
 
 
     @property
@@ -138,9 +148,10 @@ class ReturnSeries(QTimeSeries):
 
 
 if __name__ == '__main__':
-    returnSeries = ReturnSeries(['20100101', '20100102', '20100103', '20100104'], [111,222,333,444])
+    returnSeries = ReturnSeries(['20100101', '20100102', '20100103', '20100104'], [.1, .2, .3, .4])
     print returnSeries.AnnMean
     print returnSeries.AnnStd
-    print returnSeries.SR
+    print returnSeries.AnnSR
     print returnSeries.Returns
     print returnSeries.CompCumReturns
+    print returnSeries.CumReturns

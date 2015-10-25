@@ -98,9 +98,9 @@ class TileAnalysisReport(TileAnalysis):
         '''
         data = []
         for idx, ret_series in enumerate(allTileRetSeriesList):
-            data.append([ret_series.AnnMean, ret_series.AnnStd, ret_series.SR])
-        data.append([spreads_top_bottom.AnnMean, spreads_top_bottom.AnnStd, spreads_top_bottom.SR])
-        data.append([spreads_top_benchmark.AnnMean, spreads_top_benchmark.AnnStd, spreads_top_benchmark.SR])
+            data.append([ret_series.AnnMean, ret_series.AnnStd, ret_series.AnnSR])
+        data.append([spreads_top_bottom.AnnMean, spreads_top_bottom.AnnStd, spreads_top_bottom.AnnSR])
+        data.append([spreads_top_benchmark.AnnMean, spreads_top_benchmark.AnnStd, spreads_top_benchmark.AnnSR])
 
 
         '''
