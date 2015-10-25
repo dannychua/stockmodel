@@ -253,4 +253,13 @@ class Stock:
 
         return stock
 
+    @staticmethod
+    def SaveSTOCKMASTERMAP():
+        '''
+        save STOCKMASTERMAP to a cache file
+        need Stock support pickle
+        :return:
+        '''
+        pass
+
     #todo: define DefaultInstance, IsDefaultInstance
