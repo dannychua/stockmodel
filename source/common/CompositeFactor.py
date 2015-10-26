@@ -3,6 +3,7 @@ __author__ = 'xiaofeng'
 import Factor
 import math
 import pandas as pd
+import numpy as np
 from inspect import isfunction
 
 class CompositeFactor(Factor):
@@ -54,7 +55,7 @@ class CompositeFactor(Factor):
             exit(-1)
 
         def myCalc(stockID, date):
-            score = pd.nan
+            score = np.nan
             if type(self.Weights) is list:
                 for i in range(self.NumFactors):
                     score += self.Weights[i] * self.Factors[i].GetScore(stockID, date)

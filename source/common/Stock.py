@@ -7,7 +7,7 @@
 # %%
 # % it is a handle class
 import pandas as pd
-
+import numpy as np
 import GlobalConstant
 from QTimeSeries import QTimeSeries
 from SectorIndustry import SectorIndustry
@@ -103,7 +103,7 @@ class Stock:
             mktCap = self.ClosingPx.ValueAsOf(date) * self.FloatingShares.ValueAsOf(date)
             return mktCap
         except:
-            return None
+            return np.nan
 
 
     def TotalReturnInRange(self, startDate, endDate):

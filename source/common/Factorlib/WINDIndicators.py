@@ -124,7 +124,7 @@ def __getIndicatorFromDB_byDate(stockId, date, fieldName):
         df = WindIndicatorsCache.ix[tradingDt]           ## should allow AsOf, e.g. allow less than 5 days stale
         if stockId in df.index:
             return df.ix[stockId][fieldName]
-        return None
+        return np.nan
 
     # either the cache file doesn't exist or the cache doesn't contain the date
     # Query Database
@@ -140,8 +140,10 @@ def __getIndicatorFromDB_byDate(stockId, date, fieldName):
 
     WindIndicatorsCache[tradingDt] = df
     #pd.to_pickle(WindIndicatorsCache,cacheFile)
-
-    return value
+    if value is None:
+        return np.nan
+    else:
+        return value
 
 def SaveWindIndicatorsCache():
     cacheFile = GlobalConstant.DATA_FactorScores_DIR + "WindIndicatorsCache.dat"
