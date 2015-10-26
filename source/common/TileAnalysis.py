@@ -59,7 +59,7 @@ class TileAnalysis:
             fracNans = numNans / float(len(scores))
             try:
                 if fracNans > 0.5:
-                    raise ValueError('Half of stocks have NaN scores')
+                    raise ValueError('Half of stocks have NaN scores: ' + self.Factor.Name)
             except ValueError as e:
                 print 'Error: ', e
 
@@ -139,7 +139,7 @@ class TileAnalysis:
 
         plt.yticks([])
         plt.xticks([])
-        plt.title('Tile Return Analysis Report')
+        plt.title('Tile Return Analysis Report: ' + str(self.Factor.Name))
         pp = PdfPages(reportFileName)
         plt.savefig(pp, format='pdf')
         pp.close()
