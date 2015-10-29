@@ -77,7 +77,7 @@ class Factor:
             ids = []
             scores = [0]*numHoldings
             for i in range(numHoldings):
-                score = self.Calculator(pf.Holdings[i].StockID, dt.strftime('%Y%m%d'))  #%% dt doesn't need to be a trading date? strange
+                score = self.Calculator(pf.Holdings[i].StockID, dt)  #%% dt doesn't need to be a trading date? strange
                 scores[i] = score
                 ids.append(pf.Holdings[i].StockID)
             scoreMap = dict(zip(ids, scores))
@@ -100,8 +100,8 @@ class Factor:
         else:
             print >> sys.stderr, 'No universe is defined'
             return
-            self.ZScoreCache = QTimeSeries()
-            self.StkScoreMap = {}
+        self.ZScoreCache = QTimeSeries()
+        self.StkScoreMap = {}
         name = self.Name + '_Z'
         desc = self.Description + '_Z'
         if isSectorNeutral:
@@ -123,7 +123,7 @@ class Factor:
             numStk = len(holdings)
             rawscores = np.zeros(numStk)
             for i in xrange(numStk):
-                rawscores[i] = self.GetScore(holdings[i].StockID, date)
+                rawscores[i] = self.GetScore(holdings[i].StockID, date, True)  ## added AsOf==True on 10/27/2015, need further tests
             zscores = Utils.WinsorizedZ(rawscores)
             self.StkScoreMap.update(dict(zip([holding.StockID for holding in holdings], zscores)))
             self.ZScoreCache.Add(date, self.StkScoreMap)
@@ -145,16 +145,14 @@ class Factor:
             numStk = len(holdings)
             rawscores = np.zeros(numStk)
             groups = np.arange(numStk)
-            groupIdx = 1
             for i in xrange(numStk):
-                rawscores[i] = self.GetScore(holdings[i].StockID, date)
+                rawscores[i] = self.GetScore(holdings[i].StockID, date, True) ## added AsOf==True on 10/27/2015, need further tests
                 sectorCode = Stock.ByWindID(holdings[i].StockID).WindSectorCode(date)
                 groups[i] = sectorCode
 
-                #%groups = char(groups)
-            #[C, ia, groupIdx] = unique(groups)
-            zscores = Utils.WinsorizedZByGroup(rawscores, groupIdx)
+            zscores = Utils.WinsorizedZByGroup(rawscores, groups)
             self.StkScoreMap.update(dict(zip([holding.StockID for holding in holdings], zscores)))
+            self.ZScoreCache.Add(date, self.StkScoreMap)
         else:
             self.StkScoreMap = self.ZScoreCache.ValueOn(date)
         return self.StkScoreMap.get(stkID, np.nan)

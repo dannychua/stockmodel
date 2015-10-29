@@ -114,8 +114,23 @@ factors.append(Turnover_zz800PP)
 factors.append(FreeTurnover_zz800PP)
 factors.append(DividendYield_zz800PP)
 
-# # # zBP = BP.Z(False, zz800PP)
-# # # zBP_SN = BP.Z(True, zz800PP)
+factorsZ = []
+for f in factors:
+    fz = f.Z(False, zz800PP)
+    factorsZ.append(fz)
+
+factorsZSN = []
+for f in factors:
+    fz = f.Z(True, zz800PP)
+    factorsZSN.append(fz)
+
+#fs = factors
+#fs = factorsZ
+fs = factorsZSN
+for f in fs:
+    f.CalcScoresAndSave(CacheDts, zz800PP)
+
+
 # #
 # # # Calculate Scores and Save
 # BP_a50PP.CalcScoresAndSave(CacheDts, a50PP)
@@ -129,53 +144,7 @@ factors.append(DividendYield_zz800PP)
 
 print GlobalConstant.REPORT_DIR
 
-# tileAnalysis = TileAnalysis(SatDts, zz800PP, 5)
-# tileAnalysis.Run(BP_zz800PP)
-#tileAnalysis = TileAnalysisReport(SatDts, zz800PP, 5)
-#tileAnalysis.Run(BP_zz800PP, True)
-#tileAnalysis.Report(factor=BP_zz800PP, reportFileName=GlobalConstant.REPORT_DIR+'BP_zz800_1.pdf', bmDemean=True)
-#tileAnalysis.Report(factor=BP_zz800PP,  reportFileName=GlobalConstant.REPORT_DIR+'BP_zz800_0.pdf', bmDemean=False)
+# for f in fs:
+#     ta = TileAnalysis(SatDts, f, zz800PP, 5, True)
+#     ta.GenReport(GlobalConstant.REPORT_DIR+str(f.Name) + '_zz800_1_wkly.pdf')
 
-for f in factors:
-    ta = TileAnalysis(SatDts, f, zz800PP, 5, True)
-    ta.GenReport(GlobalConstant.REPORT_DIR+str(f.Name) + '_zz800_1.pdf')
-
-
-# taBP1 = TileAnalysis(SatDts, BP_zz800PP, zz800PP, 5, True)
-# taBP1.GenReport(GlobalConstant.REPORT_DIR+'BP_zz800_1.pdf')
-#
-# taEP1 = TileAnalysis(SatDts, EP_zz800PP, zz800PP, 5, True)
-# taEP1.GenReport(GlobalConstant.REPORT_DIR+'EP_zz800_1.pdf')
-#
-# taEPttm1 = TileAnalysis(SatDts, EPttm_zz800PP, zz800PP, 5, True)
-# taEPttm1.GenReport(GlobalConstant.REPORT_DIR+'EPttm_zz800_1.pdf')
-#
-# taCFP1 = TileAnalysis(SatDts, CFP_zz800PP, zz800PP, 5, True)
-# taCFP1.GenReport(GlobalConstant.REPORT_DIR+'CFP_zz800_1.pdf')
-#
-# taCFPttm1 = TileAnalysis(SatDts, CFPttm_zz800PP, zz800PP, 5, True)
-# taCFPttm1.GenReport(GlobalConstant.REPORT_DIR+'CFPttm_zz800_1.pdf')
-#
-# taOCFP1 = TileAnalysis(SatDts, OCFP_zz800PP, zz800PP, 5, True)
-# taOCFP1.GenReport(GlobalConstant.REPORT_DIR+'OCFP_zz800_1.pdf')
-#
-# taOCFPttm1 = TileAnalysis(SatDts, OCFPttm_zz800PP, zz800PP, 5, True)
-# taOCFPttm1.GenReport(GlobalConstant.REPORT_DIR+'OCFPttm_zz800_1.pdf')
-#
-# taSalesP1 = TileAnalysis(SatDts, OCFP_zz800PP, zz800PP, 5, True)
-# taSalesP1.GenReport(GlobalConstant.REPORT_DIR+'OCFP_zz800_1.pdf')
-#
-# taSalesPttm1 = TileAnalysis(SatDts, SalesPttm_zz800PP, zz800PP, 5, True)
-# taSalesPttm1.GenReport(GlobalConstant.REPORT_DIR+'SalesPttm_zz800_1.pdf')
-#
-# taTO1 = TileAnalysis(SatDts, Turnover_zz800PP, zz800PP, 5, True)
-# taTO1.GenReport(GlobalConstant.REPORT_DIR+'Turnover_zz800_1.pdf')
-#
-# taFreeTO1 = TileAnalysis(SatDts, FreeTurnover_zz800PP, zz800PP, 5, True)
-# taFreeTO1.GenReport(GlobalConstant.REPORT_DIR+'FreeTurnover_zz800_1.pdf')
-#
-# taDivYld1 = TileAnalysis(SatDts, DividendYield_zz800PP, zz800PP, 5, True)
-# taDivYld1.GenReport(GlobalConstant.REPORT_DIR+'DividendYield_zz800_1.pdf')
-
-
-#tileAnalysis.Report(factor=CFP_zz800PP,  reportFileName=GlobalConstant.REPORT_DIR+'BP_zz800_0.pdf', bmDemean=False)

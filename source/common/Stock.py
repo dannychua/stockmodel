@@ -226,18 +226,18 @@ class Stock:
         '''
         return self.WindIndustryCode(date, 1)
 
+    STOCKMASTERMAP = {}
 
-    __STOCKMASTERMAP = {}
-    @staticmethod
-    def ByWindID(windID):
+    @classmethod
+    def ByWindID(cls,windID):
         '''
         the only way to initiate a stock.
         Once we map a stock, we cache it in a dictionary
         :param windID: stock WINDID, it is a primary key for stocks in WIND
         :return: Stock instance
         '''
-        if windID in Stock.__STOCKMASTERMAP:
-            stock = Stock.__STOCKMASTERMAP[windID]
+        if windID in cls.STOCKMASTERMAP:
+            stock = cls.STOCKMASTERMAP[windID]
         else:
             # % initiate stock properties from database
             sqlStr1 = """select S_INFO_CODE Ticker, S_INFO_NAME ShortName, S_INFO_COMPNAME Name,
@@ -249,7 +249,7 @@ class Stock:
             row = curs.fetchone()
             stock = Stock(windID, row[0], row[1], row[2], row[3], row[4], row[5])
             curs.close()
-            Stock.__STOCKMASTERMAP[windID] = stock
+            cls.STOCKMASTERMAP[windID] = stock
 
         return stock
 
