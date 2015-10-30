@@ -10,18 +10,24 @@ from QTimeSeries import QTimeSeries
 from Utils import Str2Date
 
 class SectorIndustry:
-    WINDIndustry = None
-    def __init__(self):
-        #self.WINDIndustry = SectorIndustry.loadWINDIndustry()
-        WINDIndustryCache = GlobalConstant.DATA_DIR + 'WINDIndustry.dat'
-        if os.path.exists(WINDIndustryCache):
-            with open(WINDIndustryCache) as fin:
-                self.WINDIndustry = cPickle.load(fin)
-        else:
-            self.WINDIndustry = SectorIndustry.loadWINDIndustry()
-            with open(WINDIndustryCache, 'w') as fout:
-                cPickle.dump(self.WINDIndustry, fout)
 
+    def __init__(self):
+        pass
+
+    WINDIndustry = None
+
+    @classmethod
+    def GetWindIndustry(cls):
+        if cls.WINDIndustry is None:
+            WINDIndustryCache = GlobalConstant.DATA_DIR + 'WINDIndustry.dat'
+            if os.path.exists(WINDIndustryCache):
+                with open(WINDIndustryCache) as fin:
+                    cls.WINDIndustry = cPickle.load(fin)
+            else:
+                cls.WINDIndustry = SectorIndustry.loadWINDIndustry()
+                with open(WINDIndustryCache, 'w') as fout:
+                    cPickle.dump(cls.WINDIndustry, fout)
+        return cls.WINDIndustry
 
     @staticmethod
     def loadWINDIndustry():

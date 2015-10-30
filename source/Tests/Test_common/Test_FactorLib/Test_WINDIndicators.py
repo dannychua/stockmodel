@@ -1,7 +1,7 @@
 import numpy as np
 from nose.tools import with_setup
 from nose.tools import assert_almost_equal
-from source.common.Factorlib.BPCalc import *
+from source.common.Factorlib.WINDIndicators import *
 
 
 
@@ -48,3 +48,4 @@ class TestWINDIndicators:
 
     def test_DividendYieldCalc(self):
         assert_almost_equal (DividendYieldCalc(self.stockID, self.date), np.float64(0.00397437324134), 4)
+

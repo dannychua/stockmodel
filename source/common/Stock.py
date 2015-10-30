@@ -207,7 +207,7 @@ class Stock:
         '''
         date = Str2Date(date)
         windID = self.WindID
-        secInd = SectorIndustry().WINDIndustry
+        secInd = SectorIndustry.GetWindIndustry()
         if windID in secInd.keys():
             ts = secInd[windID]
             windIndustryCode = ts.ValueAsOf(date)
@@ -240,26 +240,14 @@ class Stock:
             stock = cls.STOCKMASTERMAP[windID]
         else:
             # % initiate stock properties from database
-            sqlStr1 = """select S_INFO_CODE Ticker, S_INFO_NAME ShortName, S_INFO_COMPNAME Name,
+            sqlString = """select S_INFO_WINDCODE id, S_INFO_CODE Ticker, S_INFO_NAME ShortName, S_INFO_COMPNAME Name,
             S_INFO_EXCHMARKET Exchange, S_INFO_LISTBOARD ListBoard, S_INFO_LISTDATE ListDate
-            from WINDDB.DBO.ASHAREDESCRIPTION where S_INFO_WINDCODE='%s'
-            """ % windID
-            curs = GlobalConstant.DBCONN_WIND.cursor()
-            curs.execute(sqlStr1)
-            row = curs.fetchone()
-            stock = Stock(windID, row[0], row[1], row[2], row[3], row[4], row[5])
-            curs.close()
-            cls.STOCKMASTERMAP[windID] = stock
-
+            from WINDDB.DBO.ASHAREDESCRIPTION"""
+            df = pd.read_sql(sqlString, GlobalConstant.DBCONN_WIND)
+            for row in df.itertuples(True):
+                stk = Stock(row[1], row[2], row[3], row[4], row[5], row[6], row[7]) # each row is Series obj, row[0] is the index
+                cls.STOCKMASTERMAP[row[1]] = stk
+            stock = cls.STOCKMASTERMAP[windID]
         return stock
-
-    @staticmethod
-    def SaveSTOCKMASTERMAP():
-        '''
-        save STOCKMASTERMAP to a cache file
-        need Stock support pickle
-        :return:
-        '''
-        pass
 
     #todo: define DefaultInstance, IsDefaultInstance

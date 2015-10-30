@@ -148,39 +148,3 @@ def __getIndicatorFromDB_byDate(stockId, date, fieldName):
 def SaveWindIndicatorsCache():
     cacheFile = GlobalConstant.DATA_FactorScores_DIR + "WindIndicatorsCache.dat"
     pd.to_pickle(WindIndicatorsCache,cacheFile)
-
-
-
-# print 'Working...'
-# print __getIndicatorFromDB_byStockID('600230.SH', 'BP')
-# print __getIndicatorFromDB_byDate('2015-01-03', 'BP')
-# print __getIndicatorFromDB_All('600230.SH', '2015-01-01', 'BP')
-
-## to be deleted
-# indicatorsData = None
-# def __getIndicatorFromDB_All(stockID, date, fieldName):
-#     """ Retrieve indicators from WINDDB """
-#     global indicatorsData
-#     # from datetime import datetime
-#     # GlobalConstant.TestStartDate = datetime(2014, 12, 31)
-#
-#     if indicatorsData is None:
-#         # Query Database
-#         sqlQuery = """
-#            select TRADE_DT, s_info_windcode StockID, 1/s_val_pb_new BP, 1/s_val_pe EP, 1/s_val_pe_ttm EPttm, 1/s_val_pcf_ncf CFP,
-#             1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
-#             1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
-#            from WINDDB.DBO.AShareEODDerivativeIndicator
-#            where TRADE_DT>'%s' """ % GlobalConstant.TestStartDate
-#         df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND, parse_dates = {'TRADE_DT':'%Y%m%d'})
-#
-#         # Create list of df
-#         dates = df.TRADE_DT.unique()
-#         dfArray = [df[df['TRADE_DT'] == dt].set_index('StockID') for dt in dates]
-#
-#         # Create Panel
-#         indicatorsData = pd.Series(dfArray, index=dates)
-#
-#     date = Str2Date(date)
-#     return indicatorsData[date].ix[stockID][fieldName]
-#

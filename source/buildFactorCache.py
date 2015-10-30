@@ -127,24 +127,16 @@ for f in factors:
 #fs = factors
 #fs = factorsZ
 fs = factorsZSN
-for f in fs:
-    f.CalcScoresAndSave(CacheDts, zz800PP)
-
-
-# #
-# # # Calculate Scores and Save
-# BP_a50PP.CalcScoresAndSave(CacheDts, a50PP)
-# for f in factors:
-#     f.CalcScoresAndSave(CacheDts, a50PP)
-
-# zBP.CalcScoresAndSave(CacheDts, zz800PP)
-# zBP_SN.CalcScoresAndSave(CacheDts, zz800PP)
+# for f in fs:
+#     f.CalcScoresAndSave(CacheDts, zz800PP)
 
 #SaveWindIndicatorsCache()
 
 print GlobalConstant.REPORT_DIR
 
-# for f in fs:
-#     ta = TileAnalysis(SatDts, f, zz800PP, 5, True)
-#     ta.GenReport(GlobalConstant.REPORT_DIR+str(f.Name) + '_zz800_1_wkly.pdf')
+# # # run tile analysis reports
+# # # run tile analysis reports
+for f in fs:
+    ta = TileAnalysis(SatDts, f, zz800PP, 5, True)
+    ta.GenReport(GlobalConstant.REPORT_DIR+str(f.Name) + '_zz800_1_wkly.pdf')
 
