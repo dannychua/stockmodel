@@ -12,6 +12,7 @@ import common.QDate as QDate
 from common.Factor import Factor
 from common.Factorlib.WINDIndicators import *
 from common.TileAnalysis import TileAnalysis
+from common.CompositeFactor import CompositeFactor
 
 
 # if the database is on local pc, it may be faster to load it from db than from files  by xxia on 10/10/2015
@@ -80,10 +81,6 @@ MonthDts = QDate.MonthEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.
 CacheDts = SatDts.union(MonthDts)
 
 
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# Bugs in imported modules, unable to continue
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 # Setup PortfolioProviders
 a50PP, zz800PP =  getAllPPFromCache() # getAllPPFromDb() #getAllPP()
 # BP_a50PP = Factor('BP', 'Book/Price', BPCalc, a50PP)
@@ -114,29 +111,50 @@ factors.append(Turnover_zz800PP)
 factors.append(FreeTurnover_zz800PP)
 factors.append(DividendYield_zz800PP)
 
-factorsZ = []
-for f in factors:
-    fz = f.Z(False, zz800PP)
-    factorsZ.append(fz)
+alphaFactors = []
+alphaFactors.append(BP_zz800PP)
+alphaFactors.append(EPttm_zz800PP)
+alphaFactors.append(CFPttm_zz800PP)
+alphaFactors.append(OCFPttm_zz800PP)
+alphaFactors.append(SalesPttm_zz800PP)
+alphaFactors.append(DividendYield_zz800PP)
 
-factorsZSN = []
-for f in factors:
+
+# factorsZ = []
+# for f in factors:
+#     fz = f.Z(False, zz800PP)
+#     factorsZ.append(fz)
+#
+# factorsZSN = []
+# for f in factors:
+#     fz = f.Z(True, zz800PP)
+#     factorsZSN.append(fz)
+
+alphaFactorsZSN = []
+for f in alphaFactors:
     fz = f.Z(True, zz800PP)
-    factorsZSN.append(fz)
+    alphaFactorsZSN.append(fz)
+
+compF = CompositeFactor('Comp_EqWtd', 'Equal weighted composite factor', alphaFactorsZSN, None, zz800PP)
+# compF.CalcScoresAndSave(CacheDts, zz800PP)
+# ta_wkly = TileAnalysis(SatDts, compF, zz800PP, 5, True)
+# ta_wkly.GenReport(GlobalConstant.REPORT_DIR+str(compF.Name) + '_zz800_1_wkly.pdf')
+ta_monly = TileAnalysis(MonthDts, compF, zz800PP, 5, True)
+ta_monly.GenReport(GlobalConstant.REPORT_DIR+str(compF.Name) + '_zz800_1_monly.pdf')
 
 #fs = factors
 #fs = factorsZ
-fs = factorsZSN
+#fs = factorsZSN
 # for f in fs:
 #     f.CalcScoresAndSave(CacheDts, zz800PP)
 
 #SaveWindIndicatorsCache()
 
-print GlobalConstant.REPORT_DIR
-
-# # # run tile analysis reports
-# # # run tile analysis reports
-for f in fs:
-    ta = TileAnalysis(SatDts, f, zz800PP, 5, True)
-    ta.GenReport(GlobalConstant.REPORT_DIR+str(f.Name) + '_zz800_1_wkly.pdf')
+# print GlobalConstant.REPORT_DIR
+#
+# # # # run tile analysis reports
+# # # # run tile analysis reports
+# for f in fs:
+#     ta = TileAnalysis(SatDts, f, zz800PP, 5, True)
+#     ta.GenReport(GlobalConstant.REPORT_DIR+str(f.Name) + '_zz800_1_wkly.pdf')
 

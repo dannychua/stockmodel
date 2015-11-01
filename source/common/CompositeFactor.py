@@ -4,7 +4,10 @@ import Factor
 import math
 import pandas as pd
 import numpy as np
+import logging as log
 from inspect import isfunction
+from Factor import Factor
+
 
 class CompositeFactor(Factor):
     '''
@@ -28,7 +31,7 @@ class CompositeFactor(Factor):
         self.NumFactors = len(factors)
         self.Factors = factors
         if weights is None:
-            weights = [1/self.NumFactors] * self.NumFactors       # equal weights
+            weights = [1.0/self.NumFactors] * self.NumFactors       # equal weights
             self.Weights = weights
         elif type(weights) is list:
             if len(weights) != self.NumFactors:
@@ -54,16 +57,39 @@ class CompositeFactor(Factor):
             print ("Unknown weights type: " + str(type(weights)))
             exit(-1)
 
-        def myCalc(stockID, date):
-            score = np.nan
-            if type(self.Weights) is list:
-                for i in range(self.NumFactors):
-                    score += self.Weights[i] * self.Factors[i].GetScore(stockID, date)
-            elif type(weights) is pd.Series:
-                pass
-            elif isfunction(weights):
-                pass
-            return score
 
-        self.super(name, desc, myCalc, univPP)
+        def myCalc(stockID, date):
+            '''
+            aggregate factor scores with linear weights, where weights might be a list, or a Series, or a function that takes stockID and date,
+             and return a composite score for the stock on that date
+            :param stockID: wind stock id
+            :param date: DateTime or date string in a format of 'yyyymmdd'
+            :return: a float
+            '''
+            wts = None
+            if type(self.Weights) is list:
+                wts = self.Weights
+            elif type(weights) is pd.Series:
+                wts = self.Weights[date]
+            elif isfunction(weights):
+                wts = self.Weights(stockID, date)
+
+            compScore = 0
+            nanWts = 0
+            for i in range(self.NumFactors):
+                score = wts[i] * self.Factors[i].GetScore(stockID, date)
+                if np.isnan(score):
+                    score = 0
+                    nanWts += wts[i]
+                if nanWts > 0.8:
+                    compScore = np.nan
+                elif nanWts > 0.5:
+                    log.debug('the total weights with NaN score is ' + str(nanWts))
+                    compScore += score
+                else:
+                    compScore += score
+
+            return compScore
+
+        Factor.__init__(self, name, desc, myCalc, univPP)
 
