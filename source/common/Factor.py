@@ -157,6 +157,18 @@ class Factor:
             self.StkScoreMap = self.ZScoreCache.ValueOn(date)
         return self.StkScoreMap.get(stkID, np.nan)
 
+
+    def Coverage(self, dates, isEqualWeighted = True):
+        '''
+        generate a time series of coverage ratios of the factor, where coverage ratio is defined as the percentage of
+        stocks that have valid (non-nan) scores with either equal weights or cap weights
+        :param dates: an array of dates
+        :param isEqualWeighted:
+        :return:
+        '''
+        pass
+
+
     @property
     def Name(self):
         return self.Name
