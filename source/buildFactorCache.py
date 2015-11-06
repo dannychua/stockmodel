@@ -11,6 +11,7 @@ from common.PortfolioProviders import PortfolioProviders
 import common.QDate as QDate
 from common.Factor import Factor
 from common.Factorlib.WINDIndicators import *
+from common.Factorlib.EarningsEst import *
 from common.TileAnalysis import TileAnalysis
 from common.CompositeFactor import CompositeFactor
 
@@ -96,6 +97,11 @@ SalesPttm_zz800PP = Factor('SalesPttm', 'TTM Sales/Price', SalesPttmCalc, zz800P
 Turnover_zz800PP = Factor('Turnover', 'Turnover', TurnoverCalc, zz800PP)
 FreeTurnover_zz800PP = Factor('FreeTurnover', 'Free Turnover', TurnoverCalc, zz800PP)
 DividendYield_zz800PP = Factor('DividendYield', 'Dividend Yield', DividendYieldCalc, zz800PP)
+
+EPFY2_zz800PP = Factor('EPFY2', 'Forecast E/P FY2', EPFY2Calc, zz800PP)
+EPFY2_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+SaveEarningEstCache()
+exit(0)
 
 factors = []
 factors.append(BP_zz800PP)

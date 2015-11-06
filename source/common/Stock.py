@@ -95,8 +95,11 @@ class Stock:
             self.__FloatingShares = QTimeSeries(df.TRADE_DT.tolist(), df.FloatingShares.tolist())  # % value is cell
         return self.__FloatingShares
 
-    def PriceOnDate(self, date):
-        return self.ClosingPx.ValueOn(date)
+    def UnAdjPrice(self, date, isAsOf=True):
+        if isAsOf:
+            return self.ClosingPx.ValueAsOf(date)
+        else:
+            return self.ClosingPx.ValueOn(date)
 
     def FloatMarketCap(self, date):
         try:

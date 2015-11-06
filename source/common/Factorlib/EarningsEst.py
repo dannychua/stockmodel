@@ -5,10 +5,12 @@ import pandas as pd
 
 import source.common.GlobalConstant as GlobalConstant
 from source.common.Utils import Date2Str
+from source.common.Utils import Str2Date
 from source.common.QDate import FindTradingDay
+from source.common.Stock import Stock
 
 
-def PEFY2Calc(stockId, date):
+def EPFY2Calc(stockId, date):
     return _getEarningEstFromDB_byDate(stockId, date)
 
 EarningEstCache = None
@@ -21,6 +23,7 @@ def _getEarningEstFromDB_byDate(stockId, date, fieldName = 'EPS_AVG'):
     :return: a float64
     '''
 
+    MaxLagDays = 120   ## shall it be a GlobalConstant ??
 
     tradingDt = Date2Str(FindTradingDay(date))
     global EarningEstCache
@@ -36,9 +39,12 @@ def _getEarningEstFromDB_byDate(stockId, date, fieldName = 'EPS_AVG'):
     if tradingDt in EarningEstCache:
         df = EarningEstCache.ix[stockId]           ## should allow AsOf, e.g. allow less than 5 days stale
         if tradingDt in df.index:
-            dt = pd.to_datetime(df.index, format('%Y%m%d')).asof(tradingDt) ## find dt using asof
-            dt = Date2Str(dt)
-            return df.ix[dt][fieldName]
+            dt = df.index.asof(tradingDt)
+            if(tradingDt - dt < MaxLagDays):      # discard it if it is too stale
+                value = df.ix[dt][fieldName]
+                px = Stock.ByWindID(stockId).UnAdjPrice(dt)
+                ep = value/px
+                return ep
         return np.nan
 
     # we get to this point, so either the cache file doesn't exist or the cache doesn't contain the date
@@ -61,16 +67,19 @@ def _getEarningEstFromDB_byDate(stockId, date, fieldName = 'EPS_AVG'):
         order by est_dt
         """ % (stockId, dataStartDt)
     df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
-    df = df.set_index('EST_DT')        ## should set the index to DateTimeIndex here avoiding transformation later
-    dt = pd.to_datetime(df.index, format('%Y%m%d')).asof(tradingDt)  ## find dt using asof, time consuming
-    dt = Date2Str(dt)
-    value = df.ix[dt][fieldName]
+    df = df.set_index(pd.to_datetime(df['EST_DT'], format('%Y%m%d')))
+    dt = df.index.asof(tradingDt)   ## todo to handle exception when asof goes out of boundary
+    if(Str2Date(tradingDt) - dt).days < MaxLagDays:   # discard it if it is too stale
+        value = df.ix[dt][fieldName]
 
     EarningEstCache[stockId] = df
     if value is None:
         return np.nan
     else:
-        return value
+        # is this number (earning forecast) an annual number?
+        px = Stock.ByWindID(stockId).UnAdjPrice(dt)
+        ep = value/px
+        return ep
 
 def SaveEarningEstCache():
     cacheFile = GlobalConstant.DATA_FactorScores_DIR + "EarningEstCache.dat"
