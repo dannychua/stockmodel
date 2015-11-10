@@ -4,18 +4,47 @@ from source.common import TileAnalysis
 import source.common.QDate as QDate
 from source.common import PortfolioProviders
 from source.common.SectorIndustry import *
-from source.common.Factorlib.WINDIndicators import  *
+from source.common.Factorlib.WINDIndicators import *
+from source.common.Factorlib.EarningsEst import *
 
-stockID = '600230.SH'
-date1 = '20140808'
-date2 = '20150103'
+import numpy as np
+import pandas as pd
+from inspect import isfunction
 
-score1 = BPCalc(stockID, date1)
-print(score1)
-score2 = BPCalc(stockID, date2)
-print(score2)
-cacheFile = GlobalConstant.DATA_FactorScores_DIR + "WindIndicatorsCache.dat"
-pd.to_pickle(WindIndicatorsCache,cacheFile)
+
+print pd.__version__
+
+SatDts = QDate.SaturdayBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
+MonthDts = QDate.MonthEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
+CacheDts = SatDts.union(MonthDts)
+
+GlobalConstant.IsBacktest = True
+GlobalConstant.BacktestDates = CacheDts
+getEarningsEstFromDB_Bk()
+
+
+# def func():
+#     pass
+#
+#
+# a = [1,2,3,4]
+# b = pd.Series()
+# c = func
+# print type(a) is list
+# print type(b) is pd.Series
+# print isfunction(c)
+# print np.nan
+
+
+# stockID = '600230.SH'
+# date1 = '20140808'
+# date2 = '20150103'
+#
+# score1 = BPCalc(stockID, date1)
+# print(score1)
+# score2 = BPCalc(stockID, date2)
+# print(score2)
+
 
 
 

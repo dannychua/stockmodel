@@ -17,19 +17,19 @@ def test_CalcStockReturns():
     date2 = Str2Date('20140102')
     date3 = Str2Date('20140111')  # Saturday
 
-    price0 = stk.PriceOnDate(date0)
+    price0 = stk.UnAdjPrice(date0)
     adjPrice0 = stk.AdjClosingPx.ValueOn(date0)
     adjVWAPPrice0 = stk.AdjVWAP.ValueOn(date0)
     print [round(price0,2), round(adjPrice0,2), round(adjVWAPPrice0,2)]
 
-    price1 = stk.PriceOnDate(date1)
+    price1 = stk.UnAdjPrice(date1)
     adjPrice1Asof = stk.AdjClosingPx.ValueAsOf(date1)
     adjVWAPPrice1Asof = stk.AdjVWAP.ValueAsOf(date1)
     adjPrice1After = stk.AdjClosingPx.ValueAfter(date1)
     adjVWAPPrice1After = stk.AdjVWAP.ValueAfter(date1)
     print [price1, round(adjPrice1Asof,2), round(adjVWAPPrice1Asof,2), round(adjPrice1After,2), round(adjVWAPPrice1After,2)]
 
-    price2 = stk.PriceOnDate(date2)
+    price2 = stk.UnAdjPrice(date2)
     adjPrice2 = stk.AdjClosingPx.ValueOn(date2)
     adjVWAPPrice2 = stk.AdjVWAP.ValueOn(date2)
     print [round(price2,2), round(adjPrice2,2), round(adjVWAPPrice2,2)]

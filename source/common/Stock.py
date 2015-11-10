@@ -7,7 +7,7 @@
 # %%
 # % it is a handle class
 import pandas as pd
-
+import numpy as np
 import GlobalConstant
 from QTimeSeries import QTimeSeries
 from SectorIndustry import SectorIndustry
@@ -42,7 +42,7 @@ class Stock:
     def getDatafromDB(self):
         sqlString = '''select TRADE_DT, S_DQ_CLOSE, S_DQ_VOLUME, S_DQ_AMOUNT*1000 as S_DQ_AMOUNT, S_DQ_ADJCLOSE, S_DQ_AVGPRICE*S_DQ_ADJFACTOR  as AdjVWAP
                      from WindDB.dbo.ASHAREEODPRICES where S_INFO_WINDCODE = '%s' and S_DQ_TRADESTATUS != '停牌'and TRADE_DT> '%s' order by trade_dt'''
-        sqlString = sqlString % (str(self.WindID), str(GlobalConstant.TestStartDate.strftime('%Y%m%d')))
+        sqlString = sqlString % (str(self.WindID), GlobalConstant.DataStartDate)
         self.StockDataFrame = pd.read_sql(sqlString, GlobalConstant.DBCONN_WIND)
 
         # maybe we can utilize the data frame directly without the trouble of so many QTimeSeries objects!!!
@@ -90,20 +90,23 @@ class Stock:
         if not self.__FloatingShares:
             sqlString = '''select TRADE_DT, FLOAT_A_SHR_TODAY*10000 as FloatingShares from WindDB.dbo.ASHAREEODDERIVATIVEINDICATOR
             where S_INFO_WINDCODE = '%s' and TRADE_DT> '%s'  order by trade_dt '''
-            sqlString = sqlString % (self.WindID, GlobalConstant.TestStartDate.strftime('%Y%m%d'))  # convert to string first
+            sqlString = sqlString % (self.WindID, GlobalConstant.DataStartDate)  # convert to string first
             df = pd.read_sql(sqlString, GlobalConstant.DBCONN_WIND)
             self.__FloatingShares = QTimeSeries(df.TRADE_DT.tolist(), df.FloatingShares.tolist())  # % value is cell
         return self.__FloatingShares
 
-    def PriceOnDate(self, date):
-        return self.ClosingPx.ValueOn(date)
+    def UnAdjPrice(self, date, isAsOf=True):
+        if isAsOf:
+            return self.ClosingPx.ValueAsOf(date)
+        else:
+            return self.ClosingPx.ValueOn(date)
 
     def FloatMarketCap(self, date):
         try:
             mktCap = self.ClosingPx.ValueAsOf(date) * self.FloatingShares.ValueAsOf(date)
             return mktCap
         except:
-            return None
+            return np.nan
 
 
     def TotalReturnInRange(self, startDate, endDate):
@@ -207,7 +210,7 @@ class Stock:
         '''
         date = Str2Date(date)
         windID = self.WindID
-        secInd = SectorIndustry().WINDIndustry
+        secInd = SectorIndustry.GetWindIndustry()
         if windID in secInd.keys():
             ts = secInd[windID]
             windIndustryCode = ts.ValueAsOf(date)
@@ -226,31 +229,28 @@ class Stock:
         '''
         return self.WindIndustryCode(date, 1)
 
+    STOCKMASTERMAP = {}
 
-    __STOCKMASTERMAP = {}
-    @staticmethod
-    def ByWindID(windID):
+    @classmethod
+    def ByWindID(cls,windID):
         '''
         the only way to initiate a stock.
         Once we map a stock, we cache it in a dictionary
         :param windID: stock WINDID, it is a primary key for stocks in WIND
         :return: Stock instance
         '''
-        if windID in Stock.__STOCKMASTERMAP:
-            stock = Stock.__STOCKMASTERMAP[windID]
+        if windID in cls.STOCKMASTERMAP:
+            stock = cls.STOCKMASTERMAP[windID]
         else:
             # % initiate stock properties from database
-            sqlStr1 = """select S_INFO_CODE Ticker, S_INFO_NAME ShortName, S_INFO_COMPNAME Name,
+            sqlString = """select S_INFO_WINDCODE id, S_INFO_CODE Ticker, S_INFO_NAME ShortName, S_INFO_COMPNAME Name,
             S_INFO_EXCHMARKET Exchange, S_INFO_LISTBOARD ListBoard, S_INFO_LISTDATE ListDate
-            from WINDDB.DBO.ASHAREDESCRIPTION where S_INFO_WINDCODE='%s'
-            """ % windID
-            curs = GlobalConstant.DBCONN_WIND.cursor()
-            curs.execute(sqlStr1)
-            row = curs.fetchone()
-            stock = Stock(windID, row[0], row[1], row[2], row[3], row[4], row[5])
-            curs.close()
-            Stock.__STOCKMASTERMAP[windID] = stock
-
+            from WINDDB.DBO.ASHAREDESCRIPTION"""
+            df = pd.read_sql(sqlString, GlobalConstant.DBCONN_WIND)
+            for row in df.itertuples(True):
+                stk = Stock(row[1], row[2], row[3], row[4], row[5], row[6], row[7]) # each row is Series obj, row[0] is the index
+                cls.STOCKMASTERMAP[row[1]] = stk
+            stock = cls.STOCKMASTERMAP[windID]
         return stock
 
     #todo: define DefaultInstance, IsDefaultInstance

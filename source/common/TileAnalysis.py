@@ -1,15 +1,8 @@
-import datetime as datetime
-import numpy as np
-from Utils import Str2Date
-from PortfolioProviders import PortfolioProviders
+from Stock import Stock
 from ReturnSeries import ReturnSeries
-from Factor import Factor
-import source.common.Factorlib.WINDIndicators
-from Stock import *
-from ReturnSeries import *
-from QTimeSeries import QTimeSeries
-import PortfolioProvider
 from Factorlib.WINDIndicators import *
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
 class TileAnalysis:
     """ The tile analysis is to put all stocks into equally sized groups and the number of groups is defined by Tile
@@ -17,22 +10,37 @@ class TileAnalysis:
         analyze the time series returns of each tile portfolio
     """
 
-    def __init__(self, dates, univPP, numTiles=5):
+    def __init__(self, dates, factor, univPP, numTiles=5, bmDemean = True):
         if len(dates) and type(dates[0]) is str:
             self.Dates = [Str2Date(d) for d in dates]
         else:
             self.Dates = dates
+        self.Factor = factor
         self.UnivPP = univPP
         self.NumTiles = numTiles
+        self.IsBMDemean = bmDemean
+        self.ReturnSeriesList = None
 
+    def Run(self):
+        try:
+            if self.NumTiles < 2:
+                raise ValueError('Please specify at least 2 Tiles')
+        except ValueError as e:
+            print 'Error: ', e
+            exit(-1)
 
-
-    def Run(self, factor, bmDemean=False):
         # Initialize ReturnSeries
         periods = len(self.Dates) - 1
-        topTileRets = ReturnSeries([], [])
-        botTileRets = ReturnSeries([], [])
-        spreads = ReturnSeries([], [])
+        self.ReturnSeriesList = []
+        for i in range(self.NumTiles):
+            self.ReturnSeriesList.append(ReturnSeries([], [], 'T'+str(i+1)))
+
+        bmRS = ReturnSeries([], [], 'BM')
+        spreads_top_bottom = ReturnSeries([], [], 'T1/T'+str(self.NumTiles))
+        spreads_top_benchmark =  ReturnSeries([], [], 'T1/BM')
+        self.ReturnSeriesList.append(bmRS)
+        self.ReturnSeriesList.append(spreads_top_bottom)
+        self.ReturnSeriesList.append(spreads_top_benchmark)
 
         for i in range(periods):
             # Get portfolio and it's stockIDs
@@ -44,63 +52,94 @@ class TileAnalysis:
             # Calculate Factor scores and sort them
             scores = np.zeros(len(stockIDs))
             for j in range(len(stockIDs)):
-                scores[j] = factor.GetScore(stockIDs[j], dt, True)
+                scores[j] = self.Factor.GetScore(stockIDs[j], dt, True)
 
             # Find fraction of scores that are np.nan
             numNans = np.sum(np.isnan(scores))
             fracNans = numNans / float(len(scores))
             try:
                 if fracNans > 0.5:
-                    raise ValueError('Half of stocks have NaN scores')
+                    raise ValueError('Half of stocks have NaN scores: ' + self.Factor.Name)
             except ValueError as e:
                 print 'Error: ', e
 
-            #scoreSortIdx = np.argsort(scores)  # sort ascend or descend ??; is NaN on the top or down the bottom?
             scoreSortIdx = (-scores).argsort() # NaN always in the bottom, this is to sort in a descending order; by defaults ascending order
 
-            #total non_NaNs: All NaNs in Bottom
+            '''total non_NaNs: All NaNs in Bottom'''
             numNonNaNStocks = np.count_nonzero(~np.isnan(scores))
 
-            # Initialize lists of stock returns
+            '''Initialize lists of stock returns'''
             numStocksInTile = int(np.floor(numNonNaNStocks / float(self.NumTiles)))
-            topTileStkRets = np.zeros(numStocksInTile)
-            botTileStkRets = np.zeros(numStocksInTile)
 
-            ## assuming nans are on the top !!!! need to be tested!!!
-            for j in range(numStocksInTile):
-                topTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[j]]).TotalReturnInRange_VWAP_Bk(dt, nextDt)
-                botTileStkRets[j] = Stock.ByWindID(stockIDs[scoreSortIdx[-j-1]]).TotalReturnInRange_VWAP_Bk(dt, nextDt)
+            try:
+                if numStocksInTile < 1:
+                    raise ValueError('Num of Stocks are fewer than Tiles, please decrease the number of Tiles')
+            except ValueError as e:
+                print 'Error: ', e
+                exit(-1)
 
-            # equal weighted for now, later need to check whether it is cap weighted or equal weighted
-            topRet = np.nanmean(topTileStkRets)
-            botRet = np.nanmean(botTileStkRets)
+            all_tiles_rets = []
+            '''NaNs in the bottom'''
+            for k in xrange(self.NumTiles):
+                tile_rets = []
+                for j in xrange(numStocksInTile):
+                    tile_rets.append(Stock.ByWindID(stockIDs[scoreSortIdx[j+k*numStocksInTile]]).TotalReturnInRange_VWAP_Bk(dt, nextDt))
+                all_tiles_rets.append(tile_rets)
 
-            if bmDemean:
-                bmRet = self.UnivPP.TotalReturnInRange_Bk(dt, nextDt)
-                topRet = topRet - bmRet
-                botRet = botRet - bmRet
-
-            topTileRets.Add(nextDt, topRet)
-            botTileRets.Add(nextDt, botRet)
-            spreads.Add(nextDt, topRet - botRet)
-
-        print(['Top AnnMean, ', str(topTileRets.AnnMean)])
-        print(['Top AnnStd,  ', str(topTileRets.AnnStd)])
-        print(['Top SR,      ', str(topTileRets.SR)])
-
-        print(['Bot AnnMean, ', str(botTileRets.AnnMean)])
-        print(['Bot AnnStd,  ', str(botTileRets.AnnStd)])
-        print(['Bot SR,      ', str(botTileRets.SR)])
-
-        print(['Spread AnnMean, ', str(spreads.AnnMean)])
-        print(['Spread AnnStd,  ', str(spreads.AnnStd)])
-        print(['Spread SR,      ', str(spreads.SR)])
-
-
+            '''equal weighted for now, later need to check whether it is cap weighted or equal weighted'''
+            tile_ret_list = []
+            bmRet = self.UnivPP.TotalReturnInRange_Bk(dt, nextDt)
+            for idx, ret in enumerate(all_tiles_rets):
+                mRet = np.nanmean(ret)
+                if self.IsBMDemean:
+                    mRet = mRet - bmRet
+                tile_ret_list.append(mRet)
+                self.ReturnSeriesList[idx].Add(nextDt, mRet)
+            bmRS.Add(nextDt, bmRet)
+            if len(tile_ret_list):
+                spreads_top_bottom.Add(nextDt, tile_ret_list[0] - tile_ret_list[-1])
+                if self.IsBMDemean: #already been deducted from ret
+                    spreads_top_benchmark.Add(nextDt, tile_ret_list[0])
+                else:
+                    spreads_top_benchmark.Add(nextDt, tile_ret_list[0] - bmRet)
 
 
-# if __name__ == '__main__':
-#     tileAnalysis = TileAnalysis(['20130101', '20140101', '20150101'], PortfolioProviders.getA50(), 5)
-#     aa50, zz800PP = getAllPP()
-#     BP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
-#     tileAnalysis.Run(BP, True)
+    def GenReport(self, reportFileName):
+        '''
+        Generate Tile Return Table Plot.
+
+        Run() must be called before this function. But if not, Run() will be called within the function.,
+        :param reportFileName: the pdf file to which the context will be dump
+        :return: None
+        '''
+
+        if self.ReturnSeriesList is None:
+            self.Run()
+
+        ''' Prepare data for Tile Return Table '''
+        data = []
+        for idx, ret_series in enumerate(self.ReturnSeriesList):
+            data.append([ret_series.AnnMean, ret_series.AnnStd, ret_series.AnnSR])
+
+        rowLabels = []
+        for rs in self.ReturnSeriesList:
+            rowLabels.append(rs.Name)
+
+        colLabels = ['Ann Returns', 'Ann Std', 'Sharp Ratio']
+
+        cell_text = []
+        n_rows = len(data)
+        for row in xrange(n_rows):
+            cell_text.append(['%1.2f' % x for x in data[row]])
+        the_table = plt.table(cellText=cell_text,
+                              colWidths =[0.15]*len(colLabels),
+                              rowLabels=rowLabels,
+                              colLabels=colLabels,
+                              loc='center')
+
+        plt.yticks([])
+        plt.xticks([])
+        plt.title('Tile Return Analysis Report: ' + str(self.Factor.Name))
+        pp = PdfPages(reportFileName)
+        plt.savefig(pp, format='pdf')
+        pp.close()

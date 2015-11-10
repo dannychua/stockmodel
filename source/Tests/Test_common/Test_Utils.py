@@ -21,6 +21,8 @@ def test_Winsorization():
     groups = numpy.zeros(len(b))
     for i in range(len(b)):
         groups[i] = i%10
+    groups[0] = 10
+    groups[10] = 10
 
     bz2 = WinsorizedZByGroup(b, groups)
     #print [b1[0], bz[0], bz2[0]]

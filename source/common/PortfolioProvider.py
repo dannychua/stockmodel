@@ -91,7 +91,7 @@ class PortfolioProvider:
         :return: the portfolio return during the period
         '''
         if self.__ClosingPx is None:
-            ppRet = np.nan  #% to be implemented, using the underlying portfolio to calculate its return
+            ppRet = np.nan  #todo: using the underlying portfolio to calculate its return
         else:
             startValue = self.__ClosingPx.ValueAfter(startDate)
             endValue = self.__ClosingPx.ValueAfter(endDate)

@@ -1,6 +1,5 @@
 __author__ = 'xiaodan'
 
-from datetime import datetime
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -13,8 +12,19 @@ from local_env import *
 
 
 #test start and end date
-TestStartDate = datetime(2008, 12, 31)
-TestEndDate = datetime(2014, 12, 31)
+TestStartDate = '20081231'
+TestEndDate = '20141231'
+DataStartDate = '20080930'
+
+# evaluation context
+# the impact of the Backtest mode has two folds:
+# 1. cache mechanism: consider calculating full history in one query under the backtest mode; otherwise, calculate one date only
+# 2. avoid looking ahead bais: under the debug mode, lag at least one day when taking action after the investment decision made; otherwise, use the most recent data
+IsBacktest = True  # the default value is False once we move to the live trading stage
+BacktestDates = None    # defined by users
+BacktestCalibPP = None  # backtest calibration portfolio provider
+BacktestScoringPP = None  # backtest scoring portfolio provider
+
 
 #holding structure		
 Holding = ['StockID', 'Weight', 'Shares', 'MarketValue']

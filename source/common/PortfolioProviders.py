@@ -52,7 +52,7 @@ class PortfolioProviders():
             from WINDDB.DBO.AIndexEODPrices
             where S_INFO_WINDCODE = '%s' and TRADE_DT > '%s'
             order by TRADE_DT
-            """ % (s_info_windcode, GlobalConstant.TestStartDate)
+            """ % (s_info_windcode, GlobalConstant.DataStartDate)
 
         df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
         #print df.head()  # testing
@@ -70,7 +70,7 @@ class PortfolioProviders():
             from WINDDB.DBO.AINDEXHS300FREEWEIGHT
             where S_INFO_WINDCODE = '%s' and TRADE_DT > '%s'
             order by TRADE_DT
-            """ % (s_info_windcode, GlobalConstant.TestStartDate)
+            """ % (s_info_windcode, GlobalConstant.DataStartDate)
 
         # Group SQL result by 'Date', aggregating into list of {StockID,Weight} dicts
         df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
