@@ -83,12 +83,11 @@ CacheDts = SatDts.union(MonthDts)
 
 GlobalConstant.IsBacktest = True
 GlobalConstant.BacktestDates = CacheDts
-GlobalConstant.BacktestCalibPP = zz800PP
+# GlobalConstant.BacktestCalibPP = zz800PP    # ERROR: zz800PP not defined yet...
 
 
 # Setup PortfolioProviders
 a50PP, zz800PP =  getAllPPFromCache() # getAllPPFromDb() #getAllPP()
-# BP_a50PP = Factor('BP', 'Book/Price', BPCalc, a50PP)
 BP_zz800PP = Factor('BP', 'Book/Price', BPCalc, zz800PP)
 EP_zz800PP = Factor('EP', 'Earnings/Price', EPCalc, zz800PP)
 EPttm_zz800PP = Factor('EPttm', 'TTM Earnings/Price', EPttmCalc, zz800PP)
@@ -102,10 +101,31 @@ Turnover_zz800PP = Factor('Turnover', 'Turnover', TurnoverCalc, zz800PP)
 FreeTurnover_zz800PP = Factor('FreeTurnover', 'Free Turnover', TurnoverCalc, zz800PP)
 DividendYield_zz800PP = Factor('DividendYield', 'Dividend Yield', DividendYieldCalc, zz800PP)
 
-EPFY2_zz800PP = Factor('EPFY2', 'Forecast E/P FY2', EPFY2Calc, zz800PP)
-EPFY2_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
-SaveEarningEstCache()
-exit(0)
+# Calculate Factor Scores and Save
+BP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+EP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+EPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+CFP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+CFPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+OCFP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+OCFPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+SalesP_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+SalesPttm_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+Turnover_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+FreeTurnover_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+DividendYield_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+
+
+# zBP.CalcScoresAndSave(CacheDts, zz800PP)
+# zBP_SN.CalcScoresAndSave(CacheDts, zz800PP)
+
+
+
+
+# EPFY2_zz800PP = Factor('EPFY2', 'Forecast E/P FY2', EPFY2Calc, zz800PP)
+# EPFY2_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
+# SaveEarningEstCache()
+# exit(0)
 
 # factors = []
 # factors.append(BP_zz800PP)
