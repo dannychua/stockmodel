@@ -24,7 +24,7 @@ def GetAllTradingDays():
     '''
     global __TradingDates
     if __TradingDates is None:
-        sql = '''select TRADE_DAYS from WindDB.dbo.ASHARECALENDAR where s_info_exchmarket = 'SSE' and TRADE_DAYS>'%s' order by TRADE_DAYS''' % GlobalConstant.TestStartDate
+        sql = '''select TRADE_DAYS from WindDB.dbo.ASHARECALENDAR where s_info_exchmarket = 'SSE' and TRADE_DAYS>'%s' order by TRADE_DAYS''' % GlobalConstant.DataStartDate
         curs = GlobalConstant.DBCONN_WIND.cursor()
         curs.execute(sql)
         __TradingDates = pd.to_datetime([row[0] for row in curs.fetchall()], format='%Y%m%d')

@@ -42,7 +42,7 @@ class Stock:
     def getDatafromDB(self):
         sqlString = '''select TRADE_DT, S_DQ_CLOSE, S_DQ_VOLUME, S_DQ_AMOUNT*1000 as S_DQ_AMOUNT, S_DQ_ADJCLOSE, S_DQ_AVGPRICE*S_DQ_ADJFACTOR  as AdjVWAP
                      from WindDB.dbo.ASHAREEODPRICES where S_INFO_WINDCODE = '%s' and S_DQ_TRADESTATUS != '停牌'and TRADE_DT> '%s' order by trade_dt'''
-        sqlString = sqlString % (str(self.WindID), str(GlobalConstant.TestStartDate.strftime('%Y%m%d')))
+        sqlString = sqlString % (str(self.WindID), GlobalConstant.DataStartDate)
         self.StockDataFrame = pd.read_sql(sqlString, GlobalConstant.DBCONN_WIND)
 
         # maybe we can utilize the data frame directly without the trouble of so many QTimeSeries objects!!!
@@ -90,7 +90,7 @@ class Stock:
         if not self.__FloatingShares:
             sqlString = '''select TRADE_DT, FLOAT_A_SHR_TODAY*10000 as FloatingShares from WindDB.dbo.ASHAREEODDERIVATIVEINDICATOR
             where S_INFO_WINDCODE = '%s' and TRADE_DT> '%s'  order by trade_dt '''
-            sqlString = sqlString % (self.WindID, GlobalConstant.TestStartDate.strftime('%Y%m%d'))  # convert to string first
+            sqlString = sqlString % (self.WindID, GlobalConstant.DataStartDate)  # convert to string first
             df = pd.read_sql(sqlString, GlobalConstant.DBCONN_WIND)
             self.__FloatingShares = QTimeSeries(df.TRADE_DT.tolist(), df.FloatingShares.tolist())  # % value is cell
         return self.__FloatingShares

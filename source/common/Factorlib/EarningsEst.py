@@ -2,18 +2,80 @@ __author__ = 'xiaofeng'
 import os
 import numpy as np
 import pandas as pd
+import logging as logging
 
 import source.common.GlobalConstant as GlobalConstant
 from source.common.Utils import Date2Str
 from source.common.Utils import Str2Date
 from source.common.QDate import FindTradingDay
 from source.common.Stock import Stock
+from pandas.core.index import InvalidIndexError
 
 
 def EPFY2Calc(stockId, date):
     return _getEarningEstFromDB_byDate(stockId, date)
 
-EarningEstCache = None
+#EarningEstCache = None
+def getEarningsEstFromDB_Bk():
+    MaxLagDays = 120   ## shall it be a GlobalConstant ??
+
+    #startDt = GlobalConstant.DataStartDate
+    startDt = '20140131'
+    fieldName = 'EPS_AVG'
+
+    ## EST_REPORT_DT is not needed if Type has no data error.
+    ## However, there are data errors,e.g.  ['000629.SZ', '2009-04-03']
+    sqlQuery = """
+        select S_INFO_WINDCODE Ticker, EST_DT, EPS_AVG, S_EST_YEARTYPE Type
+        from WindDB.dbo.AShareConsensusData
+        where EST_DT>'%s' and CONSEN_DATA_CYCLE_TYP = '263002000'
+        order by est_dt
+        """ % startDt
+    df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
+    stockIDs = np.unique(df.Ticker.tolist())
+
+    # dictionary of data frame with stockID being the key
+    EarningEstCacheFY1 = {}
+    EarningEstCacheFY2 = {}
+    EarningEstCacheFY3 = {}
+
+    for stockId in stockIDs:
+        dfByStk = df[df.Ticker == stockId]
+
+        EPFY1 = _getFYFromDataFrame(stockId, dfByStk, 'FY1', fieldName)
+        EPFY2 = _getFYFromDataFrame(stockId, dfByStk, 'FY2', fieldName)
+        EPFY3 = _getFYFromDataFrame(stockId, dfByStk, 'FY3', fieldName)
+
+        EarningEstCacheFY1[stockId] = EPFY1
+        EarningEstCacheFY2[stockId] = EPFY2
+        EarningEstCacheFY3[stockId] = EPFY3
+
+
+def _getFYFromDataFrame(stockId, dfByStk, type, fieldName):
+    maxLagDays = 120
+    dfByStkFY = dfByStk[dfByStk.Type == type]
+    ###     the following is wrong!!!
+    ### I am trying to set Est_DT as index of the dataframe, and then use asof to get the estDt
+    estDts = pd.to_datetime(dfByStkFY['EST_DT'], format('%Y%m%d'))  # rows are sorted by EST_DT
+    data = pd.Series(pd[fieldName],index=estDts)
+
+    EPFY = pd.TimeSeries()
+    earningEstFY = np.nan
+    for dt in GlobalConstant.BacktestDates:
+        try:
+            estDt = data.index.asof(dt)  # found the Est_Dt using AsOf
+        except InvalidIndexError:
+            logging.error('Data Error: ' + stockId + ', ' + Date2Str(dt))
+            estDt = Str2Date("19000101")
+
+        if estDt is not np.nan and (dt-estDt).days < maxLagDays:   # discard it if it is too stale
+            earningEstFY = dfByStkFY.ix[estDt][fieldName]   # is this number (earning forecast) an annual number?
+            px = Stock.ByWindID(stockId).UnAdjPrice(estDt)
+            EPFY[dt] = earningEstFY/px
+
+    return EPFY
+
+
 #todo
 def _getEarningEstFromDB_byDate(stockId, date, fieldName = 'EPS_AVG'):
     '''
@@ -24,8 +86,10 @@ def _getEarningEstFromDB_byDate(stockId, date, fieldName = 'EPS_AVG'):
     '''
 
     MaxLagDays = 120   ## shall it be a GlobalConstant ??
+    value = np.nan
 
-    tradingDt = Date2Str(FindTradingDay(date))
+    tradingDt = FindTradingDay(date)
+    tradingDtStr = Date2Str(tradingDt)
     global EarningEstCache
     cacheFile = GlobalConstant.DATA_FactorScores_DIR + "EarningEstCache.dat"
 
@@ -36,7 +100,7 @@ def _getEarningEstFromDB_byDate(stockId, date, fieldName = 'EPS_AVG'):
     if EarningEstCache is None:
         EarningEstCache = pd.Series()    # the cache file doesn't exist
 
-    if tradingDt in EarningEstCache:
+    if stockId in EarningEstCache:
         df = EarningEstCache.ix[stockId]           ## should allow AsOf, e.g. allow less than 5 days stale
         if tradingDt in df.index:
             dt = df.index.asof(tradingDt)
@@ -59,27 +123,33 @@ def _getEarningEstFromDB_byDate(stockId, date, fieldName = 'EPS_AVG'):
     #     other fields might be Null
     #     deal with EPS_AVG first and then extend to other fields
 
-    dataStartDt = Date2Str(GlobalConstant.TestStartDate)
+    dataStartDt = GlobalConstant.DataStartDate
     sqlQuery = """
-        select EST_DT, EPS_AVG
+        select EST_DT, EPS_AVG, EST_REPORT_DT
         from WindDB.dbo.AShareConsensusData
         where S_INFO_WINDCODE = '%s' and EST_DT>'%s' and CONSEN_DATA_CYCLE_TYP = '263002000' and S_EST_YEARTYPE = 'FY2'
         order by est_dt
         """ % (stockId, dataStartDt)
     df = pd.read_sql(sqlQuery, GlobalConstant.DBCONN_WIND)
+    #GlobalConstant.DBCONN_WIND.close()
     df = df.set_index(pd.to_datetime(df['EST_DT'], format('%Y%m%d')))
-    dt = df.index.asof(tradingDt)   ## todo to handle exception when asof goes out of boundary
-    if(Str2Date(tradingDt) - dt).days < MaxLagDays:   # discard it if it is too stale
-        value = df.ix[dt][fieldName]
+    try:
+        dt = df.index.asof(tradingDt)
+    except InvalidIndexError:
+        logging.error('Data Error: ' + stockId + ', ' + Date2Str(tradingDt))
+        dt = "19000101"
+        #df = df.drop_duplicates(subset='EST_DT', keep='last', inplace=True)  ## argument keep only works with v0.17.0
+        df.drop_duplicates(subset='EST_DT', inplace=True)  ## the current version of pd is v0.16.2
+        dt = df.index.asof(tradingDt)   ## to reproduce the InvalidIndexError.  it is likely a data error, e.g. ['000629.SZ', '2009-04-03']
+
+    if dt is not np.nan and (tradingDt - dt).days < MaxLagDays:   # discard it if it is too stale
+        value = df.ix[dt][fieldName]   # is this number (earning forecast) an annual number?
+        px = Stock.ByWindID(stockId).UnAdjPrice(dt)
+        value = value/px
 
     EarningEstCache[stockId] = df
-    if value is None:
-        return np.nan
-    else:
-        # is this number (earning forecast) an annual number?
-        px = Stock.ByWindID(stockId).UnAdjPrice(dt)
-        ep = value/px
-        return ep
+    return value
+
 
 def SaveEarningEstCache():
     cacheFile = GlobalConstant.DATA_FactorScores_DIR + "EarningEstCache.dat"

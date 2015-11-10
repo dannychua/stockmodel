@@ -81,6 +81,10 @@ SatDts = QDate.SaturdayBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.str
 MonthDts = QDate.MonthEndsBtw(datetime.strptime('20090401', '%Y%m%d'), datetime.strptime('20141231', '%Y%m%d') )
 CacheDts = SatDts.union(MonthDts)
 
+GlobalConstant.IsBacktest = True
+GlobalConstant.BacktestDates = CacheDts
+GlobalConstant.BacktestCalibPP = zz800PP
+
 
 # Setup PortfolioProviders
 a50PP, zz800PP =  getAllPPFromCache() # getAllPPFromDb() #getAllPP()
@@ -103,50 +107,50 @@ EPFY2_zz800PP.CalcScoresAndSave(CacheDts, zz800PP)
 SaveEarningEstCache()
 exit(0)
 
-factors = []
-factors.append(BP_zz800PP)
-factors.append(EP_zz800PP)
-factors.append(EPttm_zz800PP)
-factors.append(CFP_zz800PP)
-factors.append(CFPttm_zz800PP)
-factors.append(OCFP_zz800PP)
-factors.append(OCFPttm_zz800PP)
-factors.append(SalesP_zz800PP)
-factors.append(SalesPttm_zz800PP)
-factors.append(Turnover_zz800PP)
-factors.append(FreeTurnover_zz800PP)
-factors.append(DividendYield_zz800PP)
-
-alphaFactors = []
-alphaFactors.append(BP_zz800PP)
-alphaFactors.append(EPttm_zz800PP)
-alphaFactors.append(CFPttm_zz800PP)
-alphaFactors.append(OCFPttm_zz800PP)
-alphaFactors.append(SalesPttm_zz800PP)
-alphaFactors.append(DividendYield_zz800PP)
-
-
-# factorsZ = []
-# for f in factors:
-#     fz = f.Z(False, zz800PP)
-#     factorsZ.append(fz)
+# factors = []
+# factors.append(BP_zz800PP)
+# factors.append(EP_zz800PP)
+# factors.append(EPttm_zz800PP)
+# factors.append(CFP_zz800PP)
+# factors.append(CFPttm_zz800PP)
+# factors.append(OCFP_zz800PP)
+# factors.append(OCFPttm_zz800PP)
+# factors.append(SalesP_zz800PP)
+# factors.append(SalesPttm_zz800PP)
+# factors.append(Turnover_zz800PP)
+# factors.append(FreeTurnover_zz800PP)
+# factors.append(DividendYield_zz800PP)
 #
-# factorsZSN = []
-# for f in factors:
+# alphaFactors = []
+# alphaFactors.append(BP_zz800PP)
+# alphaFactors.append(EPttm_zz800PP)
+# alphaFactors.append(CFPttm_zz800PP)
+# alphaFactors.append(OCFPttm_zz800PP)
+# alphaFactors.append(SalesPttm_zz800PP)
+# alphaFactors.append(DividendYield_zz800PP)
+#
+#
+# # factorsZ = []
+# # for f in factors:
+# #     fz = f.Z(False, zz800PP)
+# #     factorsZ.append(fz)
+# #
+# # factorsZSN = []
+# # for f in factors:
+# #     fz = f.Z(True, zz800PP)
+# #     factorsZSN.append(fz)
+#
+# alphaFactorsZSN = []
+# for f in alphaFactors:
 #     fz = f.Z(True, zz800PP)
-#     factorsZSN.append(fz)
-
-alphaFactorsZSN = []
-for f in alphaFactors:
-    fz = f.Z(True, zz800PP)
-    alphaFactorsZSN.append(fz)
-
-compF = CompositeFactor('Comp_EqWtd', 'Equal weighted composite factor', alphaFactorsZSN, None, zz800PP)
-# compF.CalcScoresAndSave(CacheDts, zz800PP)
-# ta_wkly = TileAnalysis(SatDts, compF, zz800PP, 5, True)
-# ta_wkly.GenReport(GlobalConstant.REPORT_DIR+str(compF.Name) + '_zz800_1_wkly.pdf')
-ta_monly = TileAnalysis(MonthDts, compF, zz800PP, 5, True)
-ta_monly.GenReport(GlobalConstant.REPORT_DIR+str(compF.Name) + '_zz800_1_monly.pdf')
+#     alphaFactorsZSN.append(fz)
+#
+# compF = CompositeFactor('Comp_EqWtd', 'Equal weighted composite factor', alphaFactorsZSN, None, zz800PP)
+# # compF.CalcScoresAndSave(CacheDts, zz800PP)
+# # ta_wkly = TileAnalysis(SatDts, compF, zz800PP, 5, True)
+# # ta_wkly.GenReport(GlobalConstant.REPORT_DIR+str(compF.Name) + '_zz800_1_wkly.pdf')
+# ta_monly = TileAnalysis(MonthDts, compF, zz800PP, 5, True)
+# ta_monly.GenReport(GlobalConstant.REPORT_DIR+str(compF.Name) + '_zz800_1_monly.pdf')
 
 #fs = factors
 #fs = factorsZ
