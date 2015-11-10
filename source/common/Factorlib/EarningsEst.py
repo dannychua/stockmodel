@@ -57,7 +57,7 @@ def _getFYFromDataFrame(stockId, dfByStk, type, fieldName):
     ###     the following is wrong!!!
     ### I am trying to set Est_DT as index of the dataframe, and then use asof to get the estDt
     estDts = pd.to_datetime(dfByStkFY['EST_DT'], format('%Y%m%d'))  # rows are sorted by EST_DT
-    data = pd.Series(pd[fieldName],index=estDts)
+    data = pd.Series(dfByStkFY[fieldName],index=estDts)
 
     EPFY = pd.TimeSeries()
     earningEstFY = np.nan
