@@ -109,11 +109,11 @@ def __getIndicator(stockID, date, fieldName, purgeCache=False):
         print 'df_indicators loaded from disk cache'
         store.close()
 
-        try:
-            return indicatorsData.loc[date, stockID][fieldName]
-        except KeyError:
-            print '[__getIndicator]: StockID not found: ', StockID
-            return np.NaN
+    try:
+        return indicatorsData.loc[date, stockID][fieldName]   ## does it have asof ?
+    except KeyError:
+        print '[__getIndicator]: StockID not found: ', stockID
+        return np.NaN
 
 
 def  __writeAllIndicatorsFromDbToHDFStore(store):
@@ -128,7 +128,7 @@ def  __writeAllIndicatorsFromDbToHDFStore(store):
         1/s_val_pcf_ncfttm CFPttm, 1/s_val_pcf_ocf OCFP, 1/s_val_pcf_ocfttm OCFPttm, 1/s_val_ps SalesP,
         1/s_val_ps_ttm SalesPttm, s_dq_turn Turnover, s_dq_freeturnover FreeTurnover, 1/s_price_div_dps DividendYield
        from WINDDB.DBO.AShareEODDerivativeIndicator
-       where TRADE_DT>'%s' """ % GlobalConstant.TestStartDate
+       where TRADE_DT>'%s' """ % GlobalConstant.DataStartDate
 
     # SELECT from DB in chunks,
     # persist chunk to disk before retriving next chunk from DB
